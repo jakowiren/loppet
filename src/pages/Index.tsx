@@ -19,17 +19,21 @@ const Index = () => {
         <div className="space-y-4">
           <TypewriterText 
             text="Don't just contribute..." 
-            delay={2000}
             className="text-3xl md:text-5xl font-bold text-gray-300"
             loop={true}
             loopDelay={30000}
+            startTime={2000}
+            duration={5000}
+            speed={100}
           />
           <TypewriterText 
             text="make a difference" 
-            delay={8000}
             className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent"
             loop={true}
             loopDelay={30000}
+            startTime={8000}
+            duration={7000}
+            speed={100}
           />
         </div>
         
@@ -37,10 +41,12 @@ const Index = () => {
         <div className="mt-16">
           <TypewriterText 
             text="Join the mailing list" 
-            delay={20000}
             className="text-lg md:text-xl text-gray-400 font-light"
             loop={true}
             loopDelay={30000}
+            startTime={20000}
+            duration={5000}
+            speed={80}
           />
         </div>
       </div>

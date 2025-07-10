@@ -8,6 +8,8 @@ interface TypewriterTextProps {
   className?: string;
   loop?: boolean;
   loopDelay?: number;
+  startTime?: number; // New prop for absolute start time within loop
+  duration?: number; // New prop for animation duration
 }
 
 const TypewriterText = ({ 
@@ -16,24 +18,28 @@ const TypewriterText = ({
   speed = 50, 
   className = "",
   loop = false,
-  loopDelay = 10000
+  loopDelay = 10000,
+  startTime = 0,
+  duration = 5000
 }: TypewriterTextProps) => {
   const [displayedText, setDisplayedText] = useState('');
-  const [isStarted, setIsStarted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
   
   useEffect(() => {
-    const startTimer = setTimeout(() => {
-      setIsStarted(true);
-    }, delay);
-    
-    return () => clearTimeout(startTimer);
-  }, [delay]);
-  
-  useEffect(() => {
-    if (!isStarted) return;
-    
+    if (!loop) {
+      // Non-loop behavior (original)
+      const startTimer = setTimeout(() => {
+        setIsVisible(true);
+        animateText();
+      }, delay);
+      
+      return () => clearTimeout(startTimer);
+    }
+
+    // Loop behavior with absolute timing
     const animateText = () => {
-      setDisplayedText(''); // Reset text
+      setDisplayedText('');
+      setIsVisible(true);
       let currentIndex = 0;
       
       const timer = setInterval(() => {
@@ -47,30 +53,50 @@ const TypewriterText = ({
       
       return timer;
     };
-    
-    // Start first animation
-    const firstTimer = animateText();
-    
-    // Set up loop if enabled
-    let loopInterval: NodeJS.Timeout | null = null;
-    if (loop) {
-      loopInterval = setInterval(() => {
+
+    const runLoop = () => {
+      // Clear text at start of each loop
+      setDisplayedText('');
+      setIsVisible(false);
+      
+      // Start animation at the specified time
+      const startTimer = setTimeout(() => {
         animateText();
-      }, loopDelay);
-    }
+      }, startTime);
+      
+      // Hide text after animation duration
+      const hideTimer = setTimeout(() => {
+        setIsVisible(false);
+        setDisplayedText('');
+      }, startTime + duration);
+      
+      return [startTimer, hideTimer];
+    };
+
+    // Run first loop immediately
+    const initialTimers = runLoop();
+    
+    // Set up repeating loop
+    const loopInterval = setInterval(() => {
+      runLoop();
+    }, loopDelay);
     
     return () => {
-      clearInterval(firstTimer);
-      if (loopInterval) clearInterval(loopInterval);
+      initialTimers.forEach(timer => clearTimeout(timer));
+      clearInterval(loopInterval);
     };
-  }, [text, speed, isStarted, loop, loopDelay]);
+  }, [text, speed, delay, loop, loopDelay, startTime, duration]);
+  
+  if (!isVisible && loop) {
+    return <div className={className}></div>;
+  }
   
   return (
     <div className={className}>
       <span className="inline-block">
         {displayedText}
       </span>
-      {isStarted && displayedText.length < text.length && (
+      {isVisible && displayedText.length < text.length && (
         <span className="animate-pulse">|</span>
       )}
     </div>
