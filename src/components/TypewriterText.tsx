@@ -29,7 +29,7 @@ const TypewriterText = ({
   const loopState = useAnimationLoop(30000);
   
   const animateText = () => {
-    if (hasStartedAnimation) return; // Prevent multiple animations
+    if (hasStartedAnimation) return;
     
     setHasStartedAnimation(true);
     setDisplayedText('');
@@ -63,8 +63,8 @@ const TypewriterText = ({
     // Loop behavior with shared timing
     if (!loopState.isActive) return;
 
-    // Reset at start of each cycle only
-    if (loopState.timeInCycle < 100) {
+    // Reset at start of each cycle, but with a small delay to sync with contribution board
+    if (loopState.timeInCycle < 200) {
       setDisplayedText('');
       setIsVisible(false);
       setHasStartedAnimation(false);
@@ -78,8 +78,8 @@ const TypewriterText = ({
       }
     }
     
-    // Keep text visible after animation completes
-    if (hasCompletedAnimation) {
+    // Keep text visible after animation completes until reset
+    if (hasCompletedAnimation && loopState.timeInCycle >= 200) {
       setIsVisible(true);
     }
   }, [text, speed, delay, loop, loopState, startTime, duration, hasStartedAnimation, hasCompletedAnimation]);
