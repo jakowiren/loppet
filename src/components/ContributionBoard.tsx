@@ -27,24 +27,18 @@ const ContributionBoard = () => {
     
     const animateContributions = () => {
       const totalDuration = 15000; // 15 seconds for contributions animation
-      const fillPercentage = 0.7; // Fill 70% of cells
+      const fillPercentage = 0.7; // Fill 70% of cells (30% will stay empty)
       const cellsToFill = Math.floor(totalCells * fillPercentage);
       
-      // Create array of cells to fill in order (left to right, column by column)
-      const cellsToFillArray: number[] = [];
-      let filledCount = 0;
+      // Create array of all possible cell indices
+      const allCells = Array.from({ length: totalCells }, (_, i) => i);
       
-      // Fill column by column (week by week)
-      for (let week = 0; week < totalWeeks && filledCount < cellsToFill; week++) {
-        for (let day = 0; day < daysPerWeek && filledCount < cellsToFill; day++) {
-          // Random chance to fill this cell (to make it look organic)
-          if (Math.random() > 0.3) {
-            const cellIndex = week * daysPerWeek + day;
-            cellsToFillArray.push(cellIndex);
-            filledCount++;
-          }
-        }
-      }
+      // Randomly select which cells to fill (ensuring 30% stay empty)
+      const shuffledCells = allCells.sort(() => Math.random() - 0.5);
+      const cellsToFillArray = shuffledCells.slice(0, cellsToFill);
+      
+      // Sort by position for left-to-right filling animation
+      cellsToFillArray.sort((a, b) => a - b);
       
       // Animate cells filling in sequence over 15 seconds
       cellsToFillArray.forEach((cellIndex, index) => {
@@ -67,7 +61,7 @@ const ContributionBoard = () => {
   
   const getCellStyle = (index: number) => {
     if (!filledCells.has(index)) {
-      return contributionLevels[0]; // Empty cell
+      return contributionLevels[0]; // Empty cell (30% of all cells)
     }
     
     // Randomly assign contribution levels for filled cells
