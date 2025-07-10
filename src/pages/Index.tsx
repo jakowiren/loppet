@@ -1,12 +1,48 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import ContributionBoard from '../components/ContributionBoard';
+import TypewriterText from '../components/TypewriterText';
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center px-4 relative overflow-hidden">
+      {/* Background gradient for depth */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black opacity-50"></div>
+      
+      {/* Main content */}
+      <div className="relative z-10 text-center max-w-4xl mx-auto">
+        {/* Contribution Board */}
+        <div className="mb-12">
+          <ContributionBoard />
+        </div>
+        
+        {/* Animated Text */}
+        <div className="space-y-4">
+          <TypewriterText 
+            text="Don't just contribute..." 
+            delay={2000}
+            className="text-3xl md:text-5xl font-bold text-gray-300"
+          />
+          <TypewriterText 
+            text="make a difference" 
+            delay={4500}
+            className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent"
+          />
+        </div>
+        
+        {/* Subtle call to action */}
+        <div className="mt-16">
+          <TypewriterText 
+            text="Every commit counts. Every line matters." 
+            delay={7000}
+            className="text-lg md:text-xl text-gray-400 font-light"
+          />
+        </div>
       </div>
+      
+      {/* Subtle decorative elements */}
+      <div className="absolute top-10 left-10 w-2 h-2 bg-green-400 rounded-full opacity-30 animate-pulse"></div>
+      <div className="absolute top-32 right-20 w-1 h-1 bg-green-500 rounded-full opacity-40 animate-pulse" style={{ animationDelay: '1s' }}></div>
+      <div className="absolute bottom-20 left-20 w-1.5 h-1.5 bg-green-300 rounded-full opacity-25 animate-pulse" style={{ animationDelay: '2s' }}></div>
     </div>
   );
 };
