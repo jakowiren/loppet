@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useAnimationLoop } from '../hooks/useAnimationLoop';
 
 interface TypewriterTextProps {
   text: string;
@@ -8,8 +9,8 @@ interface TypewriterTextProps {
   className?: string;
   loop?: boolean;
   loopDelay?: number;
-  startTime?: number; // New prop for absolute start time within loop
-  duration?: number; // New prop for animation duration
+  startTime?: number;
+  duration?: number;
 }
 
 const TypewriterText = ({ 
@@ -24,6 +25,7 @@ const TypewriterText = ({
 }: TypewriterTextProps) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isVisible, setIsVisible] = useState(false);
+  const loopState = useAnimationLoop(30000);
   
   useEffect(() => {
     if (!loop) {
@@ -36,7 +38,9 @@ const TypewriterText = ({
       return () => clearTimeout(startTimer);
     }
 
-    // Loop behavior with absolute timing
+    // Loop behavior with shared timing
+    if (!loopState.isActive) return;
+
     const animateText = () => {
       setDisplayedText('');
       setIsVisible(true);
@@ -54,38 +58,23 @@ const TypewriterText = ({
       return timer;
     };
 
-    const runLoop = () => {
-      // Clear text at start of each loop
+    // Reset text at start of each cycle
+    if (loopState.timeInCycle < 100) {
       setDisplayedText('');
       setIsVisible(false);
-      
-      // Start animation at the specified time
-      const startTimer = setTimeout(() => {
+    }
+    
+    // Check if we should start animation
+    if (loopState.timeInCycle >= startTime && loopState.timeInCycle <= startTime + duration) {
+      if (!isVisible) {
         animateText();
-      }, startTime);
-      
-      // Hide text after animation duration
-      const hideTimer = setTimeout(() => {
-        setIsVisible(false);
-        setDisplayedText('');
-      }, startTime + duration);
-      
-      return [startTimer, hideTimer];
-    };
-
-    // Run first loop immediately
-    const initialTimers = runLoop();
-    
-    // Set up repeating loop
-    const loopInterval = setInterval(() => {
-      runLoop();
-    }, loopDelay);
-    
-    return () => {
-      initialTimers.forEach(timer => clearTimeout(timer));
-      clearInterval(loopInterval);
-    };
-  }, [text, speed, delay, loop, loopDelay, startTime, duration]);
+      }
+    } else {
+      // Hide text outside of our time window
+      setIsVisible(false);
+      setDisplayedText('');
+    }
+  }, [text, speed, delay, loop, loopState, startTime, duration]);
   
   return (
     <div className={className} style={{ minHeight: '1em' }}>

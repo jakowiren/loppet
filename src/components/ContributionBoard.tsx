@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useAnimationLoop } from '../hooks/useAnimationLoop';
 
 const ContributionBoard = () => {
   const [filledCells, setFilledCells] = useState<Set<number>>(new Set());
-  const [isAnimating, setIsAnimating] = useState(false);
+  const loopState = useAnimationLoop(30000);
   
   // Generate a year's worth of squares (53 weeks * 7 days)
   const totalWeeks = 53;
@@ -22,15 +23,7 @@ const ContributionBoard = () => {
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAnimating(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
-  
-  useEffect(() => {
-    if (!isAnimating) return;
+    if (!loopState.isActive) return;
     
     const animateContributions = () => {
       const totalDuration = 15000; // 15 seconds for contributions animation
@@ -62,21 +55,15 @@ const ContributionBoard = () => {
       });
     };
     
-    // Start first animation
-    animateContributions();
-    
-    // Set up loop to restart animation every 30 seconds (synchronized with text)
-    const loopInterval = setInterval(() => {
-      // Clear all cells first
+    // Reset at start of each cycle
+    if (loopState.timeInCycle < 100) {
       setFilledCells(new Set());
-      // Start animation again after a brief delay
+      // Start animation immediately after reset
       setTimeout(() => {
         animateContributions();
       }, 100);
-    }, 30000); // 30 second loop
-    
-    return () => clearInterval(loopInterval);
-  }, [isAnimating, totalCells]);
+    }
+  }, [loopState, totalCells]);
   
   const getCellStyle = (index: number) => {
     if (!filledCells.has(index)) {
