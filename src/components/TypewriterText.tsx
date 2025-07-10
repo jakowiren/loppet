@@ -24,10 +24,14 @@ const TypewriterText = ({
 }: TypewriterTextProps) => {
   const [displayedText, setDisplayedText] = useState('');
   const [isVisible, setIsVisible] = useState(false);
-  const [hasAnimated, setHasAnimated] = useState(false);
+  const [hasStartedAnimation, setHasStartedAnimation] = useState(false);
+  const [hasCompletedAnimation, setHasCompletedAnimation] = useState(false);
   const loopState = useAnimationLoop(30000);
   
   const animateText = () => {
+    if (hasStartedAnimation) return; // Prevent multiple animations
+    
+    setHasStartedAnimation(true);
     setDisplayedText('');
     setIsVisible(true);
     let currentIndex = 0;
@@ -38,7 +42,7 @@ const TypewriterText = ({
         currentIndex++;
       } else {
         clearInterval(timer);
-        setHasAnimated(true);
+        setHasCompletedAnimation(true);
       }
     }, speed);
     
@@ -59,32 +63,33 @@ const TypewriterText = ({
     // Loop behavior with shared timing
     if (!loopState.isActive) return;
 
-    // Reset at start of each cycle
+    // Reset at start of each cycle only
     if (loopState.timeInCycle < 100) {
       setDisplayedText('');
       setIsVisible(false);
-      setHasAnimated(false);
+      setHasStartedAnimation(false);
+      setHasCompletedAnimation(false);
     }
     
     // Check if we should start animation
     if (loopState.timeInCycle >= startTime && loopState.timeInCycle <= startTime + duration) {
-      if (!hasAnimated) {
+      if (!hasStartedAnimation) {
         animateText();
       }
     }
     
-    // Keep text visible after animation completes until loop restarts
-    if (hasAnimated && loopState.timeInCycle > startTime + duration) {
+    // Keep text visible after animation completes
+    if (hasCompletedAnimation) {
       setIsVisible(true);
     }
-  }, [text, speed, delay, loop, loopState, startTime, duration, hasAnimated]);
+  }, [text, speed, delay, loop, loopState, startTime, duration, hasStartedAnimation, hasCompletedAnimation]);
   
   return (
     <div className={className} style={{ minHeight: '1em' }}>
       <span className="inline-block">
         {isVisible ? displayedText : ''}
       </span>
-      {isVisible && displayedText.length < text.length && (
+      {isVisible && displayedText.length < text.length && hasStartedAnimation && (
         <span className="animate-pulse">|</span>
       )}
     </div>
