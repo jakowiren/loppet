@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 const ContributionBoard = () => {
@@ -34,7 +33,7 @@ const ContributionBoard = () => {
     if (!isAnimating) return;
     
     const animateContributions = () => {
-      const totalDuration = 3000; // 3 seconds total animation
+      const totalDuration = 15000; // 15 seconds for contributions animation
       const fillPercentage = 0.7; // Fill 70% of cells
       const cellsToFill = Math.floor(totalCells * fillPercentage);
       
@@ -54,7 +53,7 @@ const ContributionBoard = () => {
         }
       }
       
-      // Animate cells filling in sequence
+      // Animate cells filling in sequence over 15 seconds
       cellsToFillArray.forEach((cellIndex, index) => {
         const delay = (index / cellsToFillArray.length) * totalDuration;
         setTimeout(() => {
@@ -66,7 +65,7 @@ const ContributionBoard = () => {
     // Start first animation
     animateContributions();
     
-    // Set up loop to restart animation every 10 seconds
+    // Set up loop to restart animation every 30 seconds (synchronized with text)
     const loopInterval = setInterval(() => {
       // Clear all cells first
       setFilledCells(new Set());
@@ -74,7 +73,7 @@ const ContributionBoard = () => {
       setTimeout(() => {
         animateContributions();
       }, 100);
-    }, 10000);
+    }, 30000); // 30 second loop
     
     return () => clearInterval(loopInterval);
   }, [isAnimating, totalCells]);
