@@ -18,9 +18,16 @@ const Index = () => {
         {/* Animated Text */}
         <div className="space-y-4">
           <TypewriterText 
-            text="Don't just contribute... make a difference" 
+            text="Don't just contribute..." 
             delay={1000}
             className="text-3xl md:text-5xl font-bold text-gray-300"
+            loop={true}
+            loopDelay={10000}
+          />
+          <TypewriterText 
+            text="make a difference" 
+            delay={3500}
+            className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent"
             loop={true}
             loopDelay={10000}
           />
@@ -30,7 +37,7 @@ const Index = () => {
         <div className="mt-16">
           <TypewriterText 
             text="All of your contributions can make a difference" 
-            delay={4000}
+            delay={6000}
             className="text-lg md:text-xl text-gray-400 font-light"
             loop={true}
             loopDelay={10000}
