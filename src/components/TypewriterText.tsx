@@ -68,18 +68,7 @@ const TypewriterText = ({
   return (
     <div className={className}>
       <span className="inline-block">
-        {displayedText.split('').map((char, index) => (
-          <span
-            key={index}
-            className="inline-block opacity-0 animate-fade-in"
-            style={{
-              animationDelay: `${index * (speed / 1000)}s`,
-              animationFillMode: 'forwards'
-            }}
-          >
-            {char === ' ' ? '\u00A0' : char}
-          </span>
-        ))}
+        {displayedText}
       </span>
       {isStarted && displayedText.length < text.length && (
         <span className="animate-pulse">|</span>
