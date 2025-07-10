@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 
 const ContributionBoard = () => {
@@ -62,7 +63,20 @@ const ContributionBoard = () => {
       });
     };
     
+    // Start first animation
     animateContributions();
+    
+    // Set up loop to restart animation every 10 seconds
+    const loopInterval = setInterval(() => {
+      // Clear all cells first
+      setFilledCells(new Set());
+      // Start animation again after a brief delay
+      setTimeout(() => {
+        animateContributions();
+      }, 100);
+    }, 10000);
+    
+    return () => clearInterval(loopInterval);
   }, [isAnimating, totalCells]);
   
   const getCellStyle = (index: number) => {
