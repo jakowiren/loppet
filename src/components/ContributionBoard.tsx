@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 const ContributionBoard = () => {
@@ -35,38 +34,35 @@ const ContributionBoard = () => {
     
     const animateContributions = () => {
       const totalDuration = 3000; // 3 seconds total animation
-      const intervals = 50; // Number of animation steps
-      const intervalTime = totalDuration / intervals;
+      const fillPercentage = 0.7; // Fill 70% of cells
+      const cellsToFill = Math.floor(totalCells * fillPercentage);
       
-      let currentStep = 0;
+      // Create array of cells to fill in order (left to right, column by column)
+      const cellsToFillArray: number[] = [];
+      let filledCount = 0;
       
-      const interval = setInterval(() => {
-        const progress = currentStep / intervals;
-        const targetCells = Math.floor(totalCells * 0.7 * progress); // Fill 70% of cells
-        
-        // Add some randomness to make it look organic
-        const newFilledCells = new Set<number>();
-        for (let i = 0; i < targetCells; i++) {
-          let randomIndex;
-          do {
-            randomIndex = Math.floor(Math.random() * totalCells);
-          } while (newFilledCells.has(randomIndex));
-          newFilledCells.add(randomIndex);
+      // Fill column by column (week by week)
+      for (let week = 0; week < totalWeeks && filledCount < cellsToFill; week++) {
+        for (let day = 0; day < daysPerWeek && filledCount < cellsToFill; day++) {
+          // Random chance to fill this cell (to make it look organic)
+          if (Math.random() > 0.3) {
+            const cellIndex = week * daysPerWeek + day;
+            cellsToFillArray.push(cellIndex);
+            filledCount++;
+          }
         }
-        
-        setFilledCells(newFilledCells);
-        
-        currentStep++;
-        if (currentStep > intervals) {
-          clearInterval(interval);
-        }
-      }, intervalTime);
+      }
       
-      return () => clearInterval(interval);
+      // Animate cells filling in sequence
+      cellsToFillArray.forEach((cellIndex, index) => {
+        const delay = (index / cellsToFillArray.length) * totalDuration;
+        setTimeout(() => {
+          setFilledCells(prev => new Set([...prev, cellIndex]));
+        }, delay);
+      });
     };
     
-    const cleanup = animateContributions();
-    return cleanup;
+    animateContributions();
   }, [isAnimating, totalCells]);
   
   const getCellStyle = (index: number) => {
@@ -131,7 +127,6 @@ const ContributionBoard = () => {
                 style={{
                   gridColumn: week + 1,
                   gridRow: day + 1,
-                  animationDelay: `${(index / totalCells) * 2000}ms`
                 }}
               />
             );
