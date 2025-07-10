@@ -21,20 +21,26 @@ const Index = () => {
             text="Don't just contribute..." 
             delay={2000}
             className="text-3xl md:text-5xl font-bold text-gray-300"
+            loop={true}
+            loopDelay={10000}
           />
           <TypewriterText 
             text="make a difference" 
             delay={4500}
             className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent"
+            loop={true}
+            loopDelay={10000}
           />
         </div>
         
-        {/* Subtle call to action */}
+        {/* New call to action text */}
         <div className="mt-16">
           <TypewriterText 
-            text="Every commit counts. Every line matters." 
+            text="All of your contributions, can make a difference" 
             delay={7000}
             className="text-lg md:text-xl text-gray-400 font-light"
+            loop={true}
+            loopDelay={10000}
           />
         </div>
       </div>
