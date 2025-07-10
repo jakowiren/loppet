@@ -36,7 +36,7 @@ const Index = () => {
         {/* New call to action text */}
         <div className="mt-16">
           <TypewriterText 
-            text="All of your contributions can make a difference" 
+            text="Join the mailing list" 
             delay={6000}
             className="text-lg md:text-xl text-gray-400 font-light"
             loop={true}
