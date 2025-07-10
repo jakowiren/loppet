@@ -87,14 +87,10 @@ const TypewriterText = ({
     };
   }, [text, speed, delay, loop, loopDelay, startTime, duration]);
   
-  if (!isVisible && loop) {
-    return <div className={className}></div>;
-  }
-  
   return (
-    <div className={className}>
+    <div className={className} style={{ minHeight: '1em' }}>
       <span className="inline-block">
-        {displayedText}
+        {isVisible ? displayedText : ''}
       </span>
       {isVisible && displayedText.length < text.length && (
         <span className="animate-pulse">|</span>
