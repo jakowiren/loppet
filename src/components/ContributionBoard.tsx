@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useAnimationLoop } from '../hooks/useAnimationLoop';
 
@@ -27,13 +28,13 @@ const ContributionBoard = () => {
     
     const animateContributions = () => {
       const totalDuration = 15000; // 15 seconds for contributions animation
-      const fillPercentage = 0.7; // Fill 70% of cells (30% will stay empty)
+      const fillPercentage = 0.35; // Fill 35% of cells (65% will stay empty)
       const cellsToFill = Math.floor(totalCells * fillPercentage);
       
       // Create array of all possible cell indices
       const allCells = Array.from({ length: totalCells }, (_, i) => i);
       
-      // Randomly select which cells to fill (ensuring 30% stay empty)
+      // Randomly select which cells to fill (ensuring 65% stay empty)
       const shuffledCells = allCells.sort(() => Math.random() - 0.5);
       const cellsToFillArray = shuffledCells.slice(0, cellsToFill);
       
@@ -61,7 +62,7 @@ const ContributionBoard = () => {
   
   const getCellStyle = (index: number) => {
     if (!filledCells.has(index)) {
-      return contributionLevels[0]; // Empty cell (30% of all cells)
+      return contributionLevels[0]; // Empty cell (65% of all cells)
     }
     
     // Randomly assign contribution levels for filled cells
