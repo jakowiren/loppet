@@ -4,7 +4,7 @@ import TypewriterText from '../components/TypewriterText';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center px-4 relative overflow-hidden">
+    <div className="bg-gray-900 flex flex-col items-center justify-center px-4 relative overflow-hidden min-h-[calc(100vh-80px)]">
       {/* Background gradient for depth */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black opacity-50"></div>
       
