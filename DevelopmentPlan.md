@@ -300,7 +300,7 @@ GoodHub is a platform that connects developers with open-source projects, enabli
 - Built-in validation and serialization
 - Modern async/await patterns
 
-### Why TanStack Query?
+### Why TanStack Query
 - Excellent caching and synchronization
 - Optimistic updates for better UX
 - Background refetching and invalidation
