@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  googleId        String?  @unique @map("google_id")
+  username        String   @unique
+  displayName     String   @map("display_name")
+  avatarUrl       String?  @map("avatar_url")
+  skills          String[] // JSON Array of strings
+  githubUsername  String?  @map("github_username")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  createdProjects Project[]
+  projectMembers  ProjectMember[]
+
+  @@map("users")
+}
+
+enum ProjectCategory {
+  OPEN_SOURCE
+  ENVIRONMENTAL
+  EDUCATION
+  ACCESSIBILITY
+  COMMUNITY
+  HEALTHCARE
+  NONPROFIT
+
+  @@map("project_category")
+}
+
+enum ProjectStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("project_status")
+}
+
+model Project {
+  id                 String          @id @default(uuid())
+  title              String
+  description        String          @db.Text
+  githubUrl          String?         @map("github_url")
+  techStack          String[]        @map("tech_stack") // JSON Array of strings
+  category           ProjectCategory
+  impactDescription  String          @map("impact_description") @db.Text
+  status             ProjectStatus   @default(PENDING)
+  rejectionReason    String?         @map("rejection_reason") @db.Text
+  createdBy          String          @map("created_by")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  creator     User            @relation(fields: [createdBy], references: [id])
+  members     ProjectMember[]
+
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid())
+  projectId String   @map("project_id")
+  userId    String   @map("user_id")
+  joinedAt  DateTime @default(now()) @map("joined_at")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Ensure a user can only join a project once
+  @@unique([projectId, userId])
+  @@map("project_members")
+}
