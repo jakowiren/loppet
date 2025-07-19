@@ -16,9 +16,10 @@ const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://www.goodhub.dev', 'https://goodhub.dev']
+    : ['http://localhost:8080', 'http://localhost:5173'],
   credentials: true
 }));
 
