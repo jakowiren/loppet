@@ -23,6 +23,26 @@ dist-ssr
 *.sln
 *.sw?
 
+# Environment variables (NEVER commit these!)
 *.env
-
 *.env.local
+# Backend environment files
+backend/.env
+# Frontend environment files  
+.env.local
+
+# Database and secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Railway/Deployment configs with secrets
+railway.json
+.railway/
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+.vscode/settings.json
