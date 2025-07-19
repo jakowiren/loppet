@@ -28,6 +28,8 @@ const App = () => (
             <Header />
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/profile/:username" element={<Profile />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/:id" element={<ProjectDetail />} />
               <Route path="/create-project" element={
@@ -40,7 +42,6 @@ const App = () => (
                   <Dashboard />
                 </AuthGuard>
               } />
-              <Route path="/profile/:username" element={<Profile />} />
               <Route path="/admin" element={
                 <AuthGuard adminOnly={true}>
                   <Admin />
