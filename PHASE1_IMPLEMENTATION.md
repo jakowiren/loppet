@@ -142,26 +142,22 @@
 
 ## 🚀 Next Steps to Complete Phase 1
 
-1. **Complete Database Setup** (External)
-   - Set up PostgreSQL instance
-   - Run migrations
-   - Configure environment variables
+### CRITICAL FIRST STEP: External Setup (50 minutes)
+**Must be completed before any development work can continue**
+1. **Supabase Database Setup** - See `PHASE1_EXTERNAL_TASKS.md` Step 1
+2. **Google OAuth Setup** - See `PHASE1_EXTERNAL_TASKS.md` Step 2  
+3. **Environment Configuration** - See `PHASE1_EXTERNAL_TASKS.md` Steps 3-4
+4. **Supabase Deployment** - See `PHASE1_EXTERNAL_TASKS.md` Steps 5-6
+5. **Testing & Verification** - See `PHASE1_EXTERNAL_TASKS.md` Step 7
 
-2. **Complete Google OAuth Setup** (External)
-   - Configure Google Cloud Console
-   - Set up OAuth credentials
-   - Update environment files
-
-3. **Implement Remaining Frontend**
-   - Google Sign-In integration
-   - Project creation form
-   - Admin panel interface
-   - User dashboard
-
-4. **Testing & Deployment**
-   - End-to-end testing
-   - Production deployment setup
-   - Environment configuration
+### Development Work (6 days total)
+**See `PHASE1_COMPLETION_ROADMAP.md` for detailed breakdown**
+1. **Google Sign-In Frontend** (Day 1 - 4 hours)
+2. **Project Creation Form** (Day 2 - 6 hours)  
+3. **Admin Panel Interface** (Day 3 - 5 hours)
+4. **User Dashboard** (Day 4 - 4 hours)
+5. **Profile Management** (Day 5 - 3 hours)
+6. **Testing & Finalization** (Day 6 - 2 hours)
 
 ## 📋 Files Created/Modified
 
@@ -204,7 +200,8 @@ src/
 ```
 ├── package.json (updated with auth dependencies)
 ├── PHASE1_EXTERNAL_TASKS.md (setup instructions)
-└── PHASE1_IMPLEMENTATION.md (this file)
+├── PHASE1_IMPLEMENTATION.md (this file)
+└── PHASE1_COMPLETION_ROADMAP.md (development roadmap)
 ```
 
 ## 🔧 Technology Stack Implemented
