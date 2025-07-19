@@ -165,59 +165,58 @@ npm run db:migrate
 
 ---
 
-## 🚀 Step 5: Supabase Backend Deployment (FIFTH)
+## 🚀 Step 5: Railway Backend Deployment (FIFTH)
 
-### 5.1 Install Supabase CLI
+### 5.1 Install Railway CLI
 ```bash
-npm install -g supabase
+npm install -g @railway/cli
 ```
 
-### 5.2 Deploy Backend as Supabase Edge Function
-1. **Initialize Supabase in your project:**
+### 5.2 Deploy Backend to Railway
+1. **Login to Railway:**
+   ```bash
+   railway login
+   ```
+   This will open your browser for authentication.
+
+2. **Navigate to backend directory:**
    ```bash
    cd backend
-   supabase init
    ```
 
-2. **Login to Supabase:**
+3. **Initialize Railway project:**
    ```bash
-   supabase login
+   railway init
    ```
+   When prompted, choose a project name like `goodhub-backend`.
 
-3. **Link to your project:**
+4. **Set environment variables:**
    ```bash
-   supabase link --project-ref your-project-ref
+   # Database connection
+   railway variables set DATABASE_URL="postgresql://postgres.tkucrlmrqrcmcuxgthdl:VC2m0lJJPXf90V8g@aws-0-eu-north-1.pooler.supabase.com:6543/postgres?sslmode=require"
+   
+   # JWT secret (generate new production secret)
+   railway variables set JWT_SECRET="your-production-64-char-jwt-secret"
+   
+   # Google OAuth credentials
+   railway variables set GOOGLE_CLIENT_ID="your-google-client-id"
+   railway variables set GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   
+   # Admin configuration
+   railway variables set ADMIN_EMAILS="your-email@gmail.com"
+   railway variables set NODE_ENV="production"
    ```
-   (Find project-ref in Supabase Dashboard > Settings > General)
 
-4. **Create Edge Function:**
+5. **Deploy to Railway:**
    ```bash
-   supabase functions new goodhub-api
+   railway up
    ```
 
-5. **Copy your backend code to the edge function:**
+6. **Get your deployment URL:**
    ```bash
-   cp -r src/* supabase/functions/goodhub-api/
-   cp package.json supabase/functions/goodhub-api/
+   railway status
    ```
-
-6. **Deploy the function:**
-   ```bash
-   supabase functions deploy goodhub-api
-   ```
-
-7. **Get the function URL from the output and save it**
-
-### 5.3 Configure Environment Variables in Supabase
-1. **Go to Supabase Dashboard > Edge Functions**
-2. **Click on your function**
-3. **Add environment variables:**
-   - `DATABASE_URL`: Your Supabase connection string
-   - `JWT_SECRET`: Same as local
-   - `GOOGLE_CLIENT_ID`: Same as local
-   - `GOOGLE_CLIENT_SECRET`: Same as local
-   - `ADMIN_EMAILS`: Your admin email
-   - `FRONTEND_URL`: Your Vercel domain
+   Save the URL (e.g., `https://goodhub-backend-production.up.railway.app`)
 
 ---
 
@@ -232,8 +231,9 @@ npm install -g supabase
    **For Production:**
    ```
    VITE_GOOGLE_CLIENT_ID = your-google-client-id.apps.googleusercontent.com
-   VITE_API_URL = https://your-project-ref.supabase.co/functions/v1/goodhub-api
+   VITE_API_URL = https://your-railway-backend-url.up.railway.app
    ```
+   (Replace with your actual Railway deployment URL from Step 5.6)
 
    **For Preview (optional):**
    Same values as production
@@ -267,7 +267,7 @@ npm install -g supabase
 ### 7.2 Test Production Deployment
 1. **Visit your Vercel domain**
 2. **Check browser network tab for API calls**
-3. **Verify API calls go to Supabase Edge Function**
+3. **Verify API calls go to Railway backend URL**
 
 ### 7.3 Test Google OAuth (when frontend is implemented)
 1. **Click Google Sign-In button**
@@ -284,7 +284,7 @@ After completing all steps:
 - [ ] Google OAuth credentials configured
 - [ ] Local environment files configured
 - [ ] Database migrations executed successfully
-- [ ] Backend deployed to Supabase Edge Functions
+- [ ] Backend deployed to Railway
 - [ ] Vercel environment variables configured
 - [ ] Local development environment working
 - [ ] Production deployment accessible

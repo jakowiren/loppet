@@ -1,18 +1,41 @@
-version: '3.8'
 
 services:
-  app:
+  # Frontend service (React + Vite)
+  frontend:
     build:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "8080:8080"
+      - "8080:8080"  # Match Vite config port
     volumes:
-      # Mount source code for hot reloading
       - .:/app
-      # Use anonymous volume for node_modules to avoid overwriting
       - /app/node_modules
+    env_file:
+      - .env.local
     environment:
       - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+    stdin_open: true
+    tty: true
+
+  # Backend service (Node.js + Express)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../Dockerfile.backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    env_file:
+      - backend/.env
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - FRONTEND_URL=http://localhost:8080
+    working_dir: /app
     stdin_open: true
     tty: true 
