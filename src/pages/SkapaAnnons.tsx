@@ -1,0 +1,375 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Upload, X, Camera, MapPin, Tag, Calendar } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+
+const RACE_TYPES = [
+  "Triathlon",
+  "Vasaloppet", 
+  "Vätternrundan",
+  "Ironman",
+  "Cykelrace",
+  "Löpning",
+  "Simning",
+  "Multisport"
+];
+
+const CATEGORIES = [
+  "Cyklar",
+  "Kläder",
+  "Skor", 
+  "Tillbehör",
+  "Klockor",
+  "Hjälmar",
+  "Vätskor & Nutrition",
+  "Annat"
+];
+
+const CONDITIONS = [
+  "Nytt",
+  "Som nytt",
+  "Mycket bra",
+  "Bra",
+  "Acceptabelt"
+];
+
+const LOCATIONS = [
+  "Stockholm",
+  "Göteborg",
+  "Malmö",
+  "Uppsala",
+  "Linköping",
+  "Västerås",
+  "Örebro",
+  "Norrköping",
+  "Helsingborg",
+  "Jönköping",
+  "Umeå",
+  "Lund",
+  "Borås",
+  "Sundsvall",
+  "Gävle"
+];
+
+interface FormData {
+  title: string;
+  description: string;
+  price: string;
+  category: string;
+  raceType: string;
+  condition: string;
+  location: string;
+  images: File[];
+}
+
+const SkapaAnnons = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    description: "",
+    price: "",
+    category: "",
+    raceType: "",
+    condition: "",
+    location: "",
+    images: []
+  });
+
+  const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (formData.images.length + files.length > 5) {
+      alert("Du kan ladda upp max 5 bilder");
+      return;
+    }
+    setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+  };
+
+  const removeImage = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index)
+    }));
+  };
+
+  const validateForm = () => {
+    const newErrors: Partial<FormData> = {};
+
+    if (!formData.title.trim()) newErrors.title = "Titel krävs";
+    if (!formData.description.trim()) newErrors.description = "Beskrivning krävs";
+    if (!formData.price.trim()) newErrors.price = "Pris krävs";
+    if (!formData.category) newErrors.category = "Kategori krävs";
+    if (!formData.raceType) newErrors.raceType = "Lopptype krävs";
+    if (!formData.condition) newErrors.condition = "Skick krävs";
+    if (!formData.location) newErrors.location = "Plats krävs";
+
+    if (formData.price && isNaN(Number(formData.price))) {
+      newErrors.price = "Priset måste vara ett nummer";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
+    
+    try {
+      // Here you would normally send the data to your backend
+      console.log("Submitting ad:", formData);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Navigate to ads page after successful submission
+      navigate("/annonser");
+    } catch (error) {
+      console.error("Error creating ad:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <h2 className="text-xl font-semibold mb-4">Logga in för att skapa annons</h2>
+            <p className="text-gray-600">Du måste vara inloggad för att kunna skapa en annons.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-3xl mx-auto px-4">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Skapa ny annons
+          </h1>
+          <p className="text-gray-600">
+            Sälj din lopputrustning till andra entusiaster
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Tag className="h-5 w-5" />
+                Grundläggande information
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="title">Titel *</Label>
+                <Input
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleInputChange("title", e.target.value)}
+                  placeholder="t.ex. Trek Speed Concept - Timetrial cykel"
+                  className={errors.title ? "border-red-500" : ""}
+                />
+                {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="description">Beskrivning *</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) => handleInputChange("description", e.target.value)}
+                  placeholder="Beskriv din utrustning i detalj..."
+                  rows={4}
+                  className={errors.description ? "border-red-500" : ""}
+                />
+                {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+              </div>
+
+              <div>
+                <Label htmlFor="price">Pris (SEK) *</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  value={formData.price}
+                  onChange={(e) => handleInputChange("price", e.target.value)}
+                  placeholder="0"
+                  className={errors.price ? "border-red-500" : ""}
+                />
+                {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Categories */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Kategorisering
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Lopptype *</Label>
+                  <Select value={formData.raceType} onValueChange={(value) => handleInputChange("raceType", value)}>
+                    <SelectTrigger className={errors.raceType ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Välj lopptype" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RACE_TYPES.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.raceType && <p className="text-red-500 text-sm mt-1">{errors.raceType}</p>}
+                </div>
+
+                <div>
+                  <Label>Kategori *</Label>
+                  <Select value={formData.category} onValueChange={(value) => handleInputChange("category", value)}>
+                    <SelectTrigger className={errors.category ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Välj kategori" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.map(category => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+                </div>
+
+                <div>
+                  <Label>Skick *</Label>
+                  <Select value={formData.condition} onValueChange={(value) => handleInputChange("condition", value)}>
+                    <SelectTrigger className={errors.condition ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Välj skick" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CONDITIONS.map(condition => (
+                        <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.condition && <p className="text-red-500 text-sm mt-1">{errors.condition}</p>}
+                </div>
+
+                <div>
+                  <Label>Plats *</Label>
+                  <Select value={formData.location} onValueChange={(value) => handleInputChange("location", value)}>
+                    <SelectTrigger className={errors.location ? "border-red-500" : ""}>
+                      <SelectValue placeholder="Välj ort" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LOCATIONS.map(location => (
+                        <SelectItem key={location} value={location}>{location}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Images */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="h-5 w-5" />
+                Bilder (max 5)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {formData.images.map((file, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Upload ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {formData.images.length < 5 && (
+                    <label className="border-2 border-dashed border-gray-300 rounded-lg p-4 h-32 flex flex-col items-center justify-center cursor-pointer hover:border-blue-500 transition-colors">
+                      <Upload className="h-6 w-6 text-gray-400 mb-2" />
+                      <span className="text-sm text-gray-600">Ladda upp bild</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600">
+                  Ladda upp bilder på din utrustning. Första bilden blir huvudbild.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Submit */}
+          <div className="flex gap-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate("/annonser")}
+              className="flex-1"
+            >
+              Avbryt
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-1 bg-blue-600 hover:bg-blue-700"
+            >
+              {isSubmitting ? "Skapar annons..." : "Skapa annons"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default SkapaAnnons;

@@ -5,15 +5,38 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import GoogleSignIn from "./GoogleSignIn";
-import { LogOut, User, LayoutDashboard } from "lucide-react";
+import { LogOut, User, LayoutDashboard, Plus, Activity } from "lucide-react";
+
+// Custom Logo Component
+const LoppetLogo = () => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="flex-shrink-0">
+    {/* Background circle */}
+    <circle cx="16" cy="16" r="16" fill="#1e40af"/>
+    
+    {/* Running figure */}
+    <path d="M8 20c0-2 1-3.5 2.5-4.5s3-1.5 4.5-1.5 3 0.5 4.5 1.5S22 18 22 20s-1 3.5-2.5 4.5-3 1.5-4.5 1.5-3-0.5-4.5-1.5S8 22 8 20z" fill="#fbbf24"/>
+    
+    {/* Speed lines */}
+    <path d="M24 8l2 2-2 2" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M26 12l2 2-2 2" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M28 16l2 2-2 2" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    
+    {/* Finish line */}
+    <rect x="6" y="6" width="2" height="20" fill="#fbbf24"/>
+    <rect x="8" y="6" width="2" height="20" fill="#1e40af"/>
+    <rect x="10" y="6" width="2" height="20" fill="#fbbf24"/>
+    <rect x="12" y="6" width="2" height="20" fill="#1e40af"/>
+  </svg>
+);
 
 const Header = () => {
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
 
   const getActiveTab = () => {
-    if (location.pathname === '/profile') return 'profile';
-    if (location.pathname === '/projects') return 'projects';
+    if (location.pathname.startsWith('/profile')) return 'profile';
+    if (location.pathname === '/annonser' || location.pathname.startsWith('/annonser')) return 'annonser';
+    if (location.pathname === '/skapa-annons') return 'skapa-annons';
     return 'home';
   };
 
@@ -31,87 +54,71 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full bg-gray-900/95 backdrop-blur-sm border-b border-gray-700/50 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-4 py-4">
+    <header className="w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 backdrop-blur-md border-b border-blue-700/30 sticky top-0 z-50 shadow-lg">
+      <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          {/* Navigation Tabs */}
+          {/* Logo/Brand */}
+          <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="flex items-center gap-2 group-hover:scale-105 transition-transform duration-200">
+                <LoppetLogo />
+                <h1 className="text-2xl font-bold text-white group-hover:text-yellow-400 transition-colors duration-200">Loppet</h1>
+              </div>
+            </Link>
+            <span className="text-sm text-blue-200 hidden sm:block font-medium">Svenska loppmarknaden</span>
+          </div>
+
+          {/* Navigation Tabs - Updated to include all three buttons */}
           <Tabs value={getActiveTab()} className="flex">
-            <TabsList className="bg-gray-800 border border-gray-700">
+            <TabsList className="bg-blue-800/50 border border-blue-600/50 backdrop-blur-sm rounded-lg p-1">
               <Link to="/">
                 <TabsTrigger 
                   value="home" 
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-green-400 text-gray-300 hover:text-white transition-colors"
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-yellow-400 text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all duration-200 rounded-md px-4 py-2 font-medium"
                 >
-                  Home
+                  Hem
                 </TabsTrigger>
               </Link>
-              <Link to="/profile">
+              <Link to="/annonser">
                 <TabsTrigger 
-                  value="profile" 
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-green-400 text-gray-300 hover:text-white transition-colors"
+                  value="annonser" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-yellow-400 text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all duration-200 rounded-md px-4 py-2 font-medium"
                 >
-                  Profile
+                  Annonser
                 </TabsTrigger>
               </Link>
-              <Link to="/projects">
+              <Link to="/skapa-annons">
                 <TabsTrigger 
-                  value="projects" 
-                  className="data-[state=active]:bg-gray-700 data-[state=active]:text-green-400 text-gray-300 hover:text-white transition-colors"
+                  value="skapa-annons" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-yellow-400 text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all duration-200 rounded-md px-4 py-2 font-medium"
                 >
-                  Projects
+                  Skapa annons
                 </TabsTrigger>
               </Link>
             </TabsList>
           </Tabs>
 
           {/* Auth Section */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {isAuthenticated && user ? (
               <>
-                {/* Dashboard Link for authenticated users */}
-                <Link to="/dashboard">
-                  <Button variant="outline" size="sm" className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white">
-                    <LayoutDashboard className="h-4 w-4 mr-2" />
-                    Dashboard
+                {/* User Profile - Direct Link */}
+                <Link to={`/profile/${user.username}`}>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full hover:bg-blue-700/50 transition-all duration-200 border border-blue-600/30">
+                    <Avatar className="h-10 w-10 ring-2 ring-blue-600/30">
+                      <AvatarImage src={user.avatarUrl} alt={user.displayName} />
+                      <AvatarFallback className="bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium">
+                        {getUserInitials(user.displayName)}
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </Link>
-
-                {/* User Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={user.avatarUrl} alt={user.displayName} />
-                        <AvatarFallback className="bg-green-600 text-white">
-                          {getUserInitials(user.displayName)}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 bg-gray-800 border-gray-700" align="end">
-                    <div className="px-2 py-1.5 text-sm text-gray-300">
-                      <div className="font-medium">{user.displayName}</div>
-                      <div className="text-xs text-gray-400">@{user.username}</div>
-                    </div>
-                    <DropdownMenuItem asChild className="text-gray-300 hover:bg-gray-700 hover:text-white cursor-pointer">
-                      <Link to={`/profile/${user.username}`}>
-                        <User className="mr-2 h-4 w-4" />
-                        View Profile
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem 
-                      onClick={handleLogout}
-                      className="text-gray-300 hover:bg-gray-700 hover:text-white cursor-pointer"
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </>
             ) : (
-              /* Sign In Button for unauthenticated users */
-              <GoogleSignIn />
+              /* Sign In Button for unauthenticated users - improved styling */
+              <div className="bg-blue-800/50 border border-blue-600/50 backdrop-blur-sm rounded-lg p-1">
+                <GoogleSignIn className="[&>div]:rounded-md [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0 [&>div]:hover:bg-blue-700/50 [&>div]:transition-all [&>div]:duration-200" />
+              </div>
             )}
           </div>
         </div>
