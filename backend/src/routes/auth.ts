@@ -13,18 +13,19 @@ const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_SECRET
 );
 
-// Validation schemas
+// Validation schemas for marketplace
 const googleAuthSchema = z.object({
   token: z.string().min(1, 'Google token is required'),
   username: z.string().min(3, 'Username must be at least 3 characters').max(50).optional(),
-  skills: z.array(z.string()).max(20, 'Maximum 20 skills allowed').optional(),
-  githubUsername: z.string().max(100).optional()
+  phone: z.string().optional(),
+  location: z.string().max(100).optional(),
+  bio: z.string().max(500).optional()
 });
 
 // Google OAuth login/register
 router.post('/google', async (req, res) => {
   try {
-    const { token, username, skills, githubUsername } = googleAuthSchema.parse(req.body);
+    const { token, username, phone, location, bio } = googleAuthSchema.parse(req.body);
 
     // Verify Google token
     const ticket = await googleClient.verifyIdToken({
@@ -43,28 +44,13 @@ router.post('/google', async (req, res) => {
       return res.status(400).json({ error: 'Email not provided by Google' });
     }
 
-    // Check if user exists
-    let user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email },
-          { googleId }
-        ]
-      }
+    // Check if profile exists
+    let profile = await prisma.profile.findUnique({
+      where: { email }
     });
 
-    if (user) {
-      // Update existing user's Google info if needed
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          googleId,
-          avatarUrl: picture || user.avatarUrl,
-          updatedAt: new Date()
-        }
-      });
-    } else {
-      // Create new user
+    if (!profile) {
+      // Check if username is provided for new users
       if (!username) {
         return res.status(400).json({ 
           error: 'Username required for new users',
@@ -72,8 +58,8 @@ router.post('/google', async (req, res) => {
         });
       }
 
-      // Check if username is taken
-      const existingUsername = await prisma.user.findUnique({
+      // Check if username is already taken
+      const existingUsername = await prisma.profile.findUnique({
         where: { username }
       });
 
@@ -81,49 +67,46 @@ router.post('/google', async (req, res) => {
         return res.status(400).json({ error: 'Username already taken' });
       }
 
-      user = await prisma.user.create({
+      // Create new profile
+      profile = await prisma.profile.create({
         data: {
           email,
-          googleId,
           username,
           displayName: name || username,
-          avatarUrl: picture,
-          skills: skills || [],
-          githubUsername: githubUsername || null
+          avatarUrl: picture || null,
+          phone: phone || null,
+          location: location || null,
+          bio: bio || null
         }
       });
     }
 
     // Generate JWT token
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      throw new Error('JWT_SECRET not configured');
-    }
-
     const jwtToken = jwt.sign(
-      { userId: user.id },
-      jwtSecret,
+      { userId: profile.id, email: profile.email },
+      process.env.JWT_SECRET as string,
       { expiresIn: '7d' }
     );
 
     res.json({
       token: jwtToken,
       user: {
-        id: user.id,
-        email: user.email,
-        username: user.username,
-        displayName: user.displayName,
-        avatarUrl: user.avatarUrl,
-        skills: user.skills,
-        githubUsername: user.githubUsername
+        id: profile.id,
+        email: profile.email,
+        username: profile.username,
+        displayName: profile.displayName,
+        avatarUrl: profile.avatarUrl,
+        location: profile.location,
+        rating: profile.rating,
+        totalSales: profile.totalSales
       }
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Google auth error:', error);
     if (error instanceof z.ZodError) {
       return res.status(400).json({ 
-        error: 'Validation error',
+        error: 'Validation error', 
         details: error.errors 
       });
     }
@@ -131,10 +114,10 @@ router.post('/google', async (req, res) => {
   }
 });
 
-// Get current user
+// Get current user profile
 router.get('/me', authenticateToken, async (req: any, res) => {
   try {
-    const user = await prisma.user.findUnique({
+    const profile = await prisma.profile.findUnique({
       where: { id: req.userId },
       select: {
         id: true,
@@ -142,26 +125,56 @@ router.get('/me', authenticateToken, async (req: any, res) => {
         username: true,
         displayName: true,
         avatarUrl: true,
-        skills: true,
-        githubUsername: true,
+        phone: true,
+        location: true,
+        bio: true,
+        rating: true,
+        totalSales: true,
+        totalEarnings: true,
         createdAt: true
       }
     });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
     }
 
-    res.json({ user });
+    res.json({ user: profile });
   } catch (error) {
-    console.error('Get user error:', error);
-    res.status(500).json({ error: 'Failed to get user' });
+    console.error('Get profile error:', error);
+    res.status(500).json({ error: 'Failed to get profile' });
   }
 });
 
-// Verify token endpoint
-router.post('/verify', authenticateToken, (req: any, res) => {
-  res.json({ valid: true, userId: req.userId });
+// Verify JWT token
+router.post('/verify', authenticateToken, async (req: any, res) => {
+  try {
+    const profile = await prisma.profile.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        displayName: true,
+        avatarUrl: true,
+        location: true,
+        rating: true,
+        totalSales: true
+      }
+    });
+
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    res.json({ 
+      valid: true,
+      user: profile
+    });
+  } catch (error) {
+    console.error('Token verification error:', error);
+    res.status(401).json({ valid: false, error: 'Invalid token' });
+  }
 });
 
 export default router;

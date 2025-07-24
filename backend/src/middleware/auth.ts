@@ -25,17 +25,17 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 
     const decoded = jwt.verify(token, jwtSecret) as { userId: string };
     
-    // Fetch user from database to ensure they still exist
-    const user = await prisma.user.findUnique({
+    // Fetch profile from database to ensure they still exist
+    const profile = await prisma.profile.findUnique({
       where: { id: decoded.userId }
     });
 
-    if (!user) {
-      return res.status(401).json({ error: 'User not found' });
+    if (!profile) {
+      return res.status(401).json({ error: 'Profile not found' });
     }
 
     req.userId = decoded.userId;
-    req.user = user;
+    req.user = profile;
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
@@ -59,13 +59,13 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
 
     const decoded = jwt.verify(token, jwtSecret) as { userId: string };
     
-    const user = await prisma.user.findUnique({
+    const profile = await prisma.profile.findUnique({
       where: { id: decoded.userId }
     });
 
-    if (user) {
+    if (profile) {
       req.userId = decoded.userId;
-      req.user = user;
+      req.user = profile;
     }
 
     next();

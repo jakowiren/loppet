@@ -6,7 +6,8 @@ import { PrismaClient } from '@prisma/client';
 // Import routes
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
-import projectRoutes from './routes/projects';
+import adRoutes from './routes/ads';
+import raceRoutes from './routes/races';
 import adminRoutes from './routes/admin';
 
 // Load environment variables
@@ -34,7 +35,8 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
-app.use('/api/projects', projectRoutes);
+app.use('/api/ads', adRoutes);
+app.use('/api/races', raceRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Health check endpoint

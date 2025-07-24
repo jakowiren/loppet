@@ -1,115 +1,127 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { authenticateToken } from '../middleware/auth';
+import { authenticateToken, optionalAuth } from '../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // Validation schemas
 const updateProfileSchema = z.object({
-  displayName: z.string().min(1).max(100).optional(),
-  skills: z.array(z.string()).max(20, 'Maximum 20 skills allowed').optional(),
-  githubUsername: z.string().max(100).optional().nullable()
+  username: z.string().min(3, 'Username must be at least 3 characters').max(50).optional(),
+  displayName: z.string().min(1, 'Display name is required').max(100).optional(),
+  phone: z.string().max(20).optional(),
+  location: z.string().max(100).optional(),
+  bio: z.string().max(500).optional(),
+  avatarUrl: z.string().url().optional()
 });
 
 // Get user profile by username
-router.get('/:username', async (req, res) => {
+router.get('/:username', optionalAuth, async (req: any, res) => {
   try {
     const { username } = req.params;
 
-    const user = await prisma.user.findUnique({
+    const profile = await prisma.profile.findUnique({
       where: { username },
       select: {
         id: true,
         username: true,
         displayName: true,
         avatarUrl: true,
-        skills: true,
-        githubUsername: true,
+        location: true,
+        bio: true,
+        rating: true,
+        totalSales: true,
         createdAt: true,
-        createdProjects: {
-          where: { status: 'APPROVED' },
+        ads: {
+          where: { status: 'ACTIVE' },
           select: {
             id: true,
             title: true,
-            description: true,
+            price: true,
             category: true,
-            techStack: true,
+            raceType: true,
+            condition: true,
+            images: true,
             createdAt: true,
-            _count: {
-              select: { members: true }
-            }
+            views: true,
+            favoritesCount: true
           },
-          orderBy: { createdAt: 'desc' }
+          orderBy: { createdAt: 'desc' },
+          take: 12
         },
-        projectMembers: {
-          where: { project: { status: 'APPROVED' } },
+        _count: {
           select: {
-            joinedAt: true,
-            project: {
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                category: true,
-                techStack: true,
-                creator: {
-                  select: {
-                    username: true,
-                    displayName: true,
-                    avatarUrl: true
-                  }
-                }
-              }
+            ads: {
+              where: { status: 'ACTIVE' }
             }
-          },
-          orderBy: { joinedAt: 'desc' }
+          }
         }
       }
     });
 
-    if (!user) {
+    if (!profile) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    res.json({ user });
+    // Don't expose sensitive info to other users
+    const isOwnProfile = req.userId === profile.id;
+    
+    res.json({
+      ...profile,
+      activeAdsCount: profile._count.ads,
+      isOwnProfile
+    });
+
   } catch (error) {
     console.error('Get user profile error:', error);
     res.status(500).json({ error: 'Failed to get user profile' });
   }
 });
 
-// Update current user's profile
+// Update current user profile
 router.put('/profile', authenticateToken, async (req: any, res) => {
   try {
     const updateData = updateProfileSchema.parse(req.body);
 
-    const user = await prisma.user.update({
+    // If username is being updated, check if it's available
+    if (updateData.username) {
+      const existingUser = await prisma.profile.findUnique({
+        where: { username: updateData.username }
+      });
+
+      if (existingUser && existingUser.id !== req.userId) {
+        return res.status(400).json({ error: 'Username already taken' });
+      }
+    }
+
+    const updatedProfile = await prisma.profile.update({
       where: { id: req.userId },
-      data: {
-        ...updateData,
-        updatedAt: new Date()
-      },
+      data: updateData,
       select: {
         id: true,
         email: true,
         username: true,
         displayName: true,
         avatarUrl: true,
-        skills: true,
-        githubUsername: true,
+        phone: true,
+        location: true,
+        bio: true,
+        rating: true,
+        totalSales: true,
+        totalEarnings: true,
         createdAt: true,
         updatedAt: true
       }
     });
 
-    res.json({ user });
-  } catch (error) {
+    res.json({ user: updatedProfile });
+
+  } catch (error: any) {
     console.error('Update profile error:', error);
     if (error instanceof z.ZodError) {
       return res.status(400).json({ 
-        error: 'Validation error',
+        error: 'Validation error', 
         details: error.errors 
       });
     }
@@ -117,72 +129,93 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
   }
 });
 
-// Get user's dashboard data (own projects + joined projects)
-router.get('/dashboard/data', authenticateToken, async (req: any, res) => {
+// Get user dashboard data
+router.get('/dashboard/stats', authenticateToken, async (req: any, res) => {
   try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: {
-        id: true,
-        username: true,
-        displayName: true,
-        createdProjects: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            category: true,
-            techStack: true,
-            status: true,
-            createdAt: true,
-            _count: {
-              select: { members: true }
-            }
-          },
-          orderBy: { createdAt: 'desc' }
-        },
-        projectMembers: {
-          select: {
-            joinedAt: true,
-            project: {
-              select: {
-                id: true,
-                title: true,
-                description: true,
-                category: true,
-                techStack: true,
-                status: true,
-                creator: {
-                  select: {
-                    username: true,
-                    displayName: true,
-                    avatarUrl: true
-                  }
-                },
-                _count: {
-                  select: { members: true }
-                }
-              }
-            }
-          },
-          orderBy: { joinedAt: 'desc' }
+    const [profile, adStats, favorites, recentActivity] = await Promise.all([
+      // Basic profile info
+      prisma.profile.findUnique({
+        where: { id: req.userId },
+        select: {
+          username: true,
+          displayName: true,
+          avatarUrl: true,
+          rating: true,
+          totalSales: true,
+          totalEarnings: true
         }
+      }),
+
+      // Ad statistics
+      prisma.ad.groupBy({
+        by: ['status'],
+        where: { sellerId: req.userId },
+        _count: { status: true }
+      }),
+
+      // User's favorites
+      prisma.favorite.findMany({
+        where: { userId: req.userId },
+        include: {
+          ad: {
+            select: {
+              id: true,
+              title: true,
+              price: true,
+              category: true,
+              images: true,
+              status: true,
+              createdAt: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      }),
+
+      // Recent activity
+      prisma.activity.findMany({
+        where: { userId: req.userId },
+        orderBy: { createdAt: 'desc' },
+        take: 10
+      })
+    ]);
+
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
+    }
+
+    // Process ad statistics
+    const adStatistics = {
+      total: 0,
+      active: 0,
+      sold: 0,
+      paused: 0
+    };
+
+    adStats.forEach(stat => {
+      adStatistics.total += stat._count.status;
+      if (stat.status === 'ACTIVE') adStatistics.active = stat._count.status;
+      if (stat.status === 'SOLD') adStatistics.sold = stat._count.status;
+      if (stat.status === 'PAUSED') adStatistics.paused = stat._count.status;
+    });
+
+    res.json({
+      profile,
+      adStatistics,
+      favorites: favorites.map(fav => fav.ad),
+      recentActivity,
+      summary: {
+        totalAds: adStatistics.total,
+        activeAds: adStatistics.active,
+        soldAds: adStatistics.sold,
+        totalFavorites: favorites.length,
+        totalEarnings: profile.totalEarnings
       }
     });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({ 
-      createdProjects: user.createdProjects,
-      joinedProjects: user.projectMembers.map(pm => ({
-        ...pm.project,
-        joinedAt: pm.joinedAt
-      }))
-    });
   } catch (error) {
-    console.error('Get dashboard data error:', error);
+    console.error('Get dashboard error:', error);
     res.status(500).json({ error: 'Failed to get dashboard data' });
   }
 });
