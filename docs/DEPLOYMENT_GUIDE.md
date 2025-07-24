@@ -324,6 +324,166 @@ Monitor Railway logs for any errors:
 
 ---
 
+## Step 2.5: Configure Google OAuth (Critical Setup)
+
+### 2.5.1 Create Google Cloud Project
+
+#### A. Access Google Cloud Console
+1. **Go to [Google Cloud Console](https://console.cloud.google.com)**
+2. **Sign in** with your Google account
+3. **Create a new project** or select existing project:
+   - Click "Select a project" dropdown
+   - Click "New Project"
+   - **Project Name**: `loppet-marketplace` (or your preference)
+   - **Location**: Leave as default
+   - Click "Create"
+
+#### B. Enable Google+ API
+1. **Navigate to APIs & Services → Library**
+2. **Search for "Google+ API"**
+3. **Click "Google+ API"** and click "Enable"
+4. **Also enable "Google Identity"** (search and enable this too)
+
+### 2.5.2 Create OAuth 2.0 Credentials
+
+#### A. Configure OAuth Consent Screen
+1. **Go to APIs & Services → OAuth consent screen**
+2. **Select "External"** (for public users) and click "Create"
+3. **Fill out App Information:**
+   - **App name**: `Loppet - Svenska Loppmarknaden`
+   - **User support email**: Your email address
+   - **App logo**: Optional (upload your Loppet logo)
+   - **Application home page**: `https://your-domain.com` (or temp Vercel URL)
+   - **Application privacy policy**: `https://your-domain.com/privacy` (create later)
+   - **Application terms of service**: `https://your-domain.com/terms` (create later)
+
+4. **Developer Contact Information:**
+   - Add your email address
+
+5. **Click "Save and Continue"**
+
+#### B. Configure Scopes
+1. **Click "Add or Remove Scopes"**
+2. **Select these scopes:**
+   - `../auth/userinfo.email`
+   - `../auth/userinfo.profile`
+   - `openid`
+3. **Click "Update"** and **"Save and Continue"**
+
+#### C. Add Test Users (Development Phase)
+1. **Add test users** (your email and any team members)
+2. **Click "Save and Continue"**
+
+### 2.5.3 Create OAuth Client ID
+
+#### A. Create Web Application Credentials
+1. **Go to APIs & Services → Credentials**
+2. **Click "Create Credentials" → "OAuth client ID"**
+3. **Application type**: `Web application`
+4. **Name**: `Loppet Web Client`
+
+#### B. Configure Authorized Origins
+Add these **Authorized JavaScript origins**:
+```
+http://localhost:5173
+http://localhost:8080
+https://your-vercel-app-name.vercel.app
+https://your-domain.com
+https://www.your-domain.com
+```
+
+#### C. Configure Redirect URIs
+Add these **Authorized redirect URIs**:
+```
+http://localhost:5173/auth/callback
+http://localhost:8080/auth/callback
+https://your-vercel-app-name.vercel.app/auth/callback
+https://your-domain.com/auth/callback
+https://www.your-domain.com/auth/callback
+```
+
+#### D. Save and Copy Credentials
+1. **Click "Create"**
+2. **Copy the Client ID** (format: `123456789-abc...apps.googleusercontent.com`)
+3. **Copy the Client Secret** (format: `GOCSPX-...`)
+4. **Save these securely** - you'll need them for Railway and Vercel
+
+### 2.5.4 Security Configuration
+
+#### A. Domain Verification (Production)
+1. **In Google Cloud Console** → APIs & Services → Domain verification
+2. **Add your production domain** (`your-domain.com`)
+3. **Verify ownership** via DNS TXT record or HTML file upload
+
+#### B. Additional Security Settings
+1. **Go back to OAuth consent screen**
+2. **Click "Publish App"** when ready for production
+3. **Add brand verification** if planning for many users
+
+### 2.5.5 Update Environment Variables
+
+#### A. Railway Backend Variables
+Add these to your Railway environment variables:
+```bash
+GOOGLE_CLIENT_ID=your-actual-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-your-actual-client-secret
+```
+
+#### B. Local Development
+Update your `.env` file:
+```bash
+GOOGLE_CLIENT_ID="your-actual-client-id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="GOCSPX-your-actual-client-secret"
+```
+
+### 2.5.6 Test OAuth Configuration
+
+#### A. Test Login Flow
+1. **Start your backend**: `npm run dev`
+2. **Start your frontend**: `npm run dev`
+3. **Visit**: `http://localhost:5173`
+4. **Click "Logga in med Google"**
+5. **Verify**: Login flow works and returns user data
+
+#### B. Common Issues & Solutions
+
+**Error: "redirect_uri_mismatch"**
+- Check that redirect URI in Google Console exactly matches your app's callback URL
+- Ensure no trailing slashes or typos
+
+**Error: "invalid_client"**
+- Verify GOOGLE_CLIENT_ID is correct
+- Check that the client ID matches the project
+
+**Error: "access_denied"**
+- User declined permissions
+- Check that required scopes are configured
+
+**Error: "This app isn't verified"**
+- Normal for development - click "Advanced" → "Go to app (unsafe)"
+- For production, complete app verification process
+
+### 2.5.7 Production Considerations
+
+#### A. App Verification
+For public launch, Google requires verification if you have:
+- Sensitive scopes
+- Many users (>100)
+- Brand requirements
+
+#### B. Rate Limits
+- **10,000 requests/day** (free tier)
+- **100 requests/100 seconds/user** (default)
+- Monitor usage in Google Cloud Console
+
+#### C. Security Best Practices
+- **Never commit** client secrets to code
+- **Use environment variables** for all credentials
+- **Regularly rotate** client secrets
+- **Monitor** OAuth usage in Google Console
+
+---
+
 ## Step 3: Deploy Frontend to Vercel (Updated for Marketplace)
 
 ### 3.1 Pre-deployment Frontend Checklist

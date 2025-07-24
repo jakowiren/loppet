@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { adsApi } from '@/lib/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import VideoBackground from '@/components/VideoBackground';
 import { 
   Plus, 
   Search, 
@@ -55,67 +57,57 @@ interface DashboardData {
   };
 }
 
-// Mock data for demonstration
-const MOCK_DASHBOARD_DATA: DashboardData = {
-  userAds: [
-    {
-      id: "1",
-      title: "Trek Speed Concept - Timetrial cykel",
-      description: "Professionell timetrial cykel i utmärkt skick",
-      price: 45000,
-      category: "Cyklar",
-      raceType: "Triathlon",
-      condition: "Mycket bra",
-      status: "ACTIVE",
-      createdAt: "2025-01-15",
-      views: 234,
-      favorites: 12,
-      location: "Stockholm"
-    },
-    {
-      id: "2",
-      title: "Garmin Forerunner 945",
-      description: "Komplett triathlon-klocka med alla funktioner",
-      price: 6500,
-      category: "Klockor",
-      raceType: "Triathlon",
-      condition: "Mycket bra",
-      status: "SOLD",
-      createdAt: "2025-01-10",
-      views: 156,
-      favorites: 8,
-      location: "Stockholm"
-    }
-  ],
-  favoriteAds: [],
-  recentActivity: [
-    {
-      id: "1",
-      type: "AD_CREATED",
-      adTitle: "Trek Speed Concept",
-      timestamp: "2025-01-15"
-    },
-    {
-      id: "2",
-      type: "AD_SOLD",
-      adTitle: "Garmin Forerunner 945",
-      timestamp: "2025-01-14"
-    }
-  ],
-  stats: {
-    totalAds: 12,
-    activeAds: 8,
-    totalViews: 1240,
-    totalSold: 4,
-    totalEarnings: 89500
-  }
-};
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [dashboardData] = useState<DashboardData>(MOCK_DASHBOARD_DATA);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        // TODO: Replace with actual API call when backend is ready
+        // const data = await adsApi.getDashboardData();
+        // setDashboardData(data);
+        
+        // For now, set empty data structure
+        setDashboardData({
+          userAds: [],
+          favoriteAds: [],
+          recentActivity: [],
+          stats: {
+            totalAds: 0,
+            activeAds: 0,
+            totalViews: 0,
+            totalSold: 0,
+            totalEarnings: 0
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        setDashboardData({
+          userAds: [],
+          favoriteAds: [],
+          recentActivity: [],
+          stats: {
+            totalAds: 0,
+            activeAds: 0,
+            totalViews: 0,
+            totalSold: 0,
+            totalEarnings: 0
+          }
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (user) {
+      fetchDashboardData();
+    }
+  }, [user]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -177,111 +169,125 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Min dashboard</h1>
-          <p className="text-gray-600">Välkommen tillbaka, {user?.displayName}!</p>
-        </div>
+    <div className="min-h-screen relative">
+      <VideoBackground
+        videoSources={[
+          { src: "/mov_bbb.mp4", type: "video/mp4" },
+          { src: "/background.mov", type: "video/quicktime" }
+        ]}
+        fallbackImage="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+        className="absolute inset-0"
+      >
+        {/* Video overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-blue-800/50 to-blue-700/60 z-10"></div>
+      </VideoBackground>
+      
+      <div className="relative z-20 min-h-screen py-8 px-4">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">Min dashboard</h1>
+            <p className="text-blue-100">Välkommen tillbaka, {user?.displayName}!</p>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* User's Ads */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShoppingBag className="h-5 w-5" />
-                Mina annonser
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {dashboardData.userAds.length === 0 ? (
-                <div className="text-center py-8">
-                  <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-4">Du har inga annonser än</p>
-                  <Link to="/skapa-annons">
-                    <Button>Skapa din första annons</Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {dashboardData.userAds.slice(0, 3).map((ad) => (
-                    <div key={ad.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-gray-900">{ad.title}</h3>
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(ad.status)}
-                          <Badge className={getStatusColor(ad.status)}>
-                            {getStatusLabel(ad.status)}
-                          </Badge>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* User's Ads */}
+            <Card className="bg-white/90 backdrop-blur-sm border-white/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ShoppingBag className="h-5 w-5" />
+                  Mina annonser
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!dashboardData || dashboardData.userAds.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">Inga annonser uppe</p>
+                    <Link to="/skapa-annons">
+                      <Button>Skapa din första annons</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {dashboardData.userAds.slice(0, 3).map((ad) => (
+                      <div key={ad.id} className="border border-gray-200 rounded-lg p-4 bg-white/80 backdrop-blur-sm">
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-semibold text-gray-900">{ad.title}</h3>
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(ad.status)}
+                            <Badge className={getStatusColor(ad.status)}>
+                              {getStatusLabel(ad.status)}
+                            </Badge>
+                          </div>
+                        </div>
+                        <p className="text-gray-600 text-sm mb-3">{ad.description}</p>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
+                          <div className="flex items-center gap-4 text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <Eye className="h-4 w-4" />
+                              {ad.views}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Heart className="h-4 w-4" />
+                              {ad.favorites}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <p className="text-gray-600 text-sm mb-3">{ad.description}</p>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
-                        <div className="flex items-center gap-4 text-gray-500">
-                          <span className="flex items-center gap-1">
-                            <Eye className="h-4 w-4" />
-                            {ad.views}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Heart className="h-4 w-4" />
-                            {ad.favorites}
-                          </span>
+                    ))}
+                    {dashboardData.userAds.length > 3 && (
+                      <div className="text-center pt-4">
+                        <Button variant="outline" size="sm">
+                          Visa alla annonser ({dashboardData.userAds.length})
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Recent Activity */}
+            <Card className="bg-white/90 backdrop-blur-sm border-white/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Senaste aktivitet
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!dashboardData || dashboardData.recentActivity.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">Ingen aktivitet än</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {dashboardData.recentActivity.map((activity) => (
+                      <div key={activity.id} className="flex items-start gap-3">
+                        <div className="p-2 bg-blue-100 rounded-full">
+                          <Calendar className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-gray-900">
+                            {activity.type === 'AD_CREATED' && `Skapade annons "${activity.adTitle}"`}
+                            {activity.type === 'AD_SOLD' && `Sålde "${activity.adTitle}"`}
+                            {activity.type === 'AD_FAVORITED' && `Någon gillade "${activity.adTitle}"`}
+                            {activity.type === 'MESSAGE_RECEIVED' && `Fick meddelande om "${activity.adTitle}"`}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(activity.timestamp)}
+                          </p>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                  {dashboardData.userAds.length > 3 && (
-                    <div className="text-center pt-4">
-                      <Button variant="outline" size="sm">
-                        Visa alla annonser ({dashboardData.userAds.length})
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Senaste aktivitet
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {dashboardData.recentActivity.length === 0 ? (
-                <div className="text-center py-8">
-                  <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Ingen aktivitet än</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {dashboardData.recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start gap-3">
-                      <div className="p-2 bg-blue-100 rounded-full">
-                        <Calendar className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm text-gray-900">
-                          {activity.type === 'AD_CREATED' && `Skapade annons "${activity.adTitle}"`}
-                          {activity.type === 'AD_SOLD' && `Sålde "${activity.adTitle}"`}
-                          {activity.type === 'AD_FAVORITED' && `Någon gillade "${activity.adTitle}"`}
-                          {activity.type === 'MESSAGE_RECEIVED' && `Fick meddelande om "${activity.adTitle}"`}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {formatDate(activity.timestamp)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

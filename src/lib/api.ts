@@ -127,6 +127,61 @@ export const userApi = {
   }
 };
 
+// Ads API
+export const adsApi = {
+  getAds: async (params?: {
+    search?: string;
+    raceType?: string;
+    category?: string;
+    condition?: string;
+    priceRange?: string;
+    page?: number;
+    limit?: number;
+  }) => {
+    const response = await api.get('/ads', { params });
+    return response.data;
+  },
+
+  getAd: async (id: string) => {
+    const response = await api.get(`/ads/${id}`);
+    return response.data;
+  },
+
+  createAd: async (adData: {
+    title: string;
+    description: string;
+    price: number;
+    category: string;
+    raceType: string;
+    condition: string;
+    location: string;
+    images: string[];
+  }) => {
+    const response = await api.post('/ads', adData);
+    return response.data;
+  },
+
+  getUserAds: async () => {
+    const response = await api.get('/ads/user');
+    return response.data;
+  },
+
+  getDashboardData: async () => {
+    const response = await api.get('/ads/dashboard');
+    return response.data;
+  },
+
+  favoriteAd: async (id: string) => {
+    const response = await api.post(`/ads/${id}/favorite`);
+    return response.data;
+  },
+
+  unfavoriteAd: async (id: string) => {
+    const response = await api.delete(`/ads/${id}/favorite`);
+    return response.data;
+  }
+};
+
 // Admin API
 export const adminApi = {
   getPendingProjects: async () => {

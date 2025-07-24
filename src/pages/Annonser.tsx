@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { adsApi } from "@/lib/api";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -47,104 +48,6 @@ const PRICE_RANGES = [
   "Över 20 000 kr"
 ];
 
-const MOCK_ADS = [
-  {
-    id: "1",
-    title: "Trek Speed Concept - Timetrial cykel",
-    price: 45000,
-    location: "Stockholm",
-    postedDate: "2025-01-15",
-    category: "Cyklar",
-    raceType: "Triathlon",
-    condition: "Mycket bra",
-    images: ["/api/placeholder/300/200"],
-    description: "Professionell timetrial cykel i utmärkt skick. Perfekt för triathlon och tempo-race.",
-    seller: {
-      name: "Magnus L.",
-      rating: 4.8
-    }
-  },
-  {
-    id: "2", 
-    title: "Zone3 Wetsuit - Herr Medium",
-    price: 2800,
-    location: "Göteborg",
-    postedDate: "2025-01-14",
-    category: "Kläder",
-    raceType: "Triathlon",
-    condition: "Som nytt",
-    images: ["/api/placeholder/300/200"],
-    description: "Knappt använd våtdräkt från Zone3. Storlek M. Perfekt för öppet vatten.",
-    seller: {
-      name: "Anna S.",
-      rating: 4.9
-    }
-  },
-  {
-    id: "3",
-    title: "Salomon S/LAB Sense 8 - Löpskor",
-    price: 1200,
-    location: "Malmö",
-    postedDate: "2025-01-13",
-    category: "Skor",
-    raceType: "Löpning",
-    condition: "Bra",
-    images: ["/api/placeholder/300/200"],
-    description: "Trailskor i bra skick. Perfekta för långa distanser i naturen.",
-    seller: {
-      name: "Erik M.",
-      rating: 4.7
-    }
-  },
-  {
-    id: "4",
-    title: "Garmin Forerunner 945 - GPS Klocka",
-    price: 6500,
-    location: "Uppsala",
-    postedDate: "2025-01-12",
-    category: "Klockor",
-    raceType: "Triathlon",
-    condition: "Mycket bra",
-    images: ["/api/placeholder/300/200"],
-    description: "Komplett triathlon-klocka med alla funktioner. Inklusive originalladdare.",
-    seller: {
-      name: "Lisa K.",
-      rating: 5.0
-    }
-  },
-  {
-    id: "5",
-    title: "Specialized Tarmac SL7 - Racercykel",
-    price: 32000,
-    location: "Lund",
-    postedDate: "2025-01-11",
-    category: "Cyklar",
-    raceType: "Cykelrace",
-    condition: "Som nytt",
-    images: ["/api/placeholder/300/200"],
-    description: "Nästan ny racercykel i toppskick. Shimano Ultegra Di2 växlar.",
-    seller: {
-      name: "Johan P.",
-      rating: 4.6
-    }
-  },
-  {
-    id: "6",
-    title: "POC Ventral Air SPIN - Hjälm",
-    price: 1800,
-    location: "Västerås",
-    postedDate: "2025-01-10",
-    category: "Hjälmar",
-    raceType: "Cykelrace",
-    condition: "Mycket bra",
-    images: ["/api/placeholder/300/200"],
-    description: "Aerodynamisk hjälm för racing. Storlek M. Mycket luftig och bekväm.",
-    seller: {
-      name: "Sara W.",
-      rating: 4.8
-    }
-  }
-];
 
 const Annonser = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -153,6 +56,35 @@ const Annonser = () => {
   const [selectedCondition, setSelectedCondition] = useState("Alla skick");
   const [selectedPriceRange, setSelectedPriceRange] = useState("Alla priser");
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [ads, setAds] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchAds = async () => {
+      try {
+        setIsLoading(true);
+        // TODO: Replace with actual API call when backend is ready
+        // const response = await adsApi.getAds({
+        //   search: searchTerm,
+        //   raceType: selectedRaceType !== "Alla typer" ? selectedRaceType : undefined,
+        //   category: selectedCategory !== "Alla kategorier" ? selectedCategory : undefined,
+        //   condition: selectedCondition !== "Alla skick" ? selectedCondition : undefined,
+        //   priceRange: selectedPriceRange !== "Alla priser" ? selectedPriceRange : undefined
+        // });
+        // setAds(response.data);
+        
+        // For now, set empty array
+        setAds([]);
+      } catch (error) {
+        console.error('Error fetching ads:', error);
+        setAds([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAds();
+  }, [searchTerm, selectedRaceType, selectedCategory, selectedCondition, selectedPriceRange]);
 
   const handleFavorite = (id: string) => {
     const newFavorites = new Set(favorites);
@@ -164,15 +96,7 @@ const Annonser = () => {
     setFavorites(newFavorites);
   };
 
-  const filteredAds = MOCK_ADS.filter(ad => {
-    const matchesSearch = ad.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ad.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRaceType = selectedRaceType === "Alla typer" || ad.raceType === selectedRaceType;
-    const matchesCategory = selectedCategory === "Alla kategorier" || ad.category === selectedCategory;
-    const matchesCondition = selectedCondition === "Alla skick" || ad.condition === selectedCondition;
-    
-    return matchesSearch && matchesRaceType && matchesCategory && matchesCondition;
-  });
+  const filteredAds = ads;
 
   const clearFilters = () => {
     setSelectedRaceType("Alla typer");
@@ -249,7 +173,7 @@ const Annonser = () => {
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4 text-gray-500" />
               <span className="text-sm text-gray-600">
-                {filteredAds.length} annonser hittades
+                {isLoading ? 'Laddar...' : filteredAds.length === 0 ? 'Inga annonser uppe' : `${filteredAds.length} annonser hittades`}
               </span>
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary">
@@ -278,16 +202,13 @@ const Annonser = () => {
           ))}
         </div>
 
-        {filteredAds.length === 0 && (
+        {!isLoading && filteredAds.length === 0 && (
           <div className="text-center py-12">
             <div className="text-gray-500 mb-4">
               <Filter className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium mb-2">Inga annonser hittades</h3>
-              <p>Prova att ändra dina sökkriterier eller filter</p>
+              <h3 className="text-lg font-medium mb-2">Inga annonser uppe</h3>
+              <p>Bli först med att publicera din utrustning</p>
             </div>
-            <Button variant="outline" onClick={clearFilters}>
-              Rensa alla filter
-            </Button>
           </div>
         )}
       </div>

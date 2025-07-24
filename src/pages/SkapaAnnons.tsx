@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { adsApi } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -136,7 +137,18 @@ const SkapaAnnons = () => {
     setIsSubmitting(true);
     
     try {
-      // Here you would normally send the data to your backend
+      // TODO: Replace with actual API call when backend is ready
+      // await adsApi.createAd({
+      //   title: formData.title,
+      //   description: formData.description,
+      //   price: Number(formData.price),
+      //   category: formData.category,
+      //   raceType: formData.raceType,
+      //   condition: formData.condition,
+      //   location: formData.location,
+      //   images: [] // TODO: Handle image upload
+      // });
+      
       console.log("Submitting ad:", formData);
       
       // Simulate API call
