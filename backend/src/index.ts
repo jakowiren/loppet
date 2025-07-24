@@ -18,9 +18,14 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://www.goodhub.dev', 'https://goodhub.dev']
-    : ['http://localhost:8080', 'http://localhost:5173'],
-  credentials: true
+    ? [
+        process.env.FRONTEND_URL, 
+        process.env.FRONTEND_URL ? `https://www.${process.env.FRONTEND_URL.replace('https://', '')}` : undefined
+      ].filter(Boolean) as string[]
+    : ['http://localhost:5173', 'http://localhost:8080'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -33,8 +38,24 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get('/health', async (req, res) => {
+  try {
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
+    res.status(200).json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      database: 'connected',
+      service: 'loppet-backend'
+    });
+  } catch (error) {
+    res.status(503).json({ 
+      status: 'error', 
+      timestamp: new Date().toISOString(),
+      database: 'disconnected',
+      service: 'loppet-backend'
+    });
+  }
 });
 
 // Error handling middleware

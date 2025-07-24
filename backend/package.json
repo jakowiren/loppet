@@ -1,7 +1,7 @@
 {
-  "name": "goodhub-backend",
+  "name": "loppet-backend",
   "version": "1.0.0",
-  "description": "GoodHub backend API server",
+  "description": "Loppet Swedish sports equipment marketplace backend API server",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
