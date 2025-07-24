@@ -46,7 +46,7 @@ This document tracks problematic design patterns and issues in the frontend code
 
 **Problem:** Complete authentication failure with 403 errors, COOP violations, and 500 backend errors.
 
-**Root Causes Identified & Fixed:**
+**Root Causdes Identified & Fixed:**
 - **Database Connection:** Supabase direct connection was blocked, pooler had "prepared statement" errors
 - **Schema Issues:** Database tables didn't exist after manual cascade deletion
 
