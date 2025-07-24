@@ -37,27 +37,60 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ className = '' }) => {
 
   useEffect(() => {
     // Initialize Google Sign-In when component mounts
-    if (typeof window !== 'undefined' && window.google && googleButtonRef.current) {
-      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
-      
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleGoogleResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
+    const initializeGoogleSignIn = () => {
+      if (typeof window === 'undefined' || !window.google) {
+        return;
+      }
 
-      // Render the working Google button
-      window.google.accounts.id.renderButton(
-        googleButtonRef.current,
-        { 
-          theme: 'outline', 
-          size: 'large',
-          type: 'standard',
-          text: 'signin_with',
-          width: 250
+      const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      
+      if (!clientId) {
+        console.warn('Google Client ID not found in environment variables');
+        return;
+      }
+
+      if (!googleButtonRef.current) {
+        return;
+      }
+
+      try {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+
+        // Render the working Google button
+        window.google.accounts.id.renderButton(
+          googleButtonRef.current,
+          { 
+            theme: 'outline', 
+            size: 'large',
+            type: 'standard',
+            text: 'signin_with',
+            width: 250
+          }
+        );
+      } catch (error) {
+        console.error('Failed to initialize Google Sign-In:', error);
+      }
+    };
+
+    // Check if Google script is already loaded
+    if (window.google) {
+      initializeGoogleSignIn();
+    } else {
+      // Wait for Google script to load
+      const checkGoogleLoaded = setInterval(() => {
+        if (window.google) {
+          clearInterval(checkGoogleLoaded);
+          initializeGoogleSignIn();
         }
-      );
+      }, 100);
+
+      // Clean up interval after 10 seconds
+      setTimeout(() => clearInterval(checkGoogleLoaded), 10000);
     }
   }, []);
 

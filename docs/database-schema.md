@@ -388,7 +388,7 @@ INSERT INTO ads (title, description, price, category, race_type, condition, loca
   'Triathlon',
   'Mycket bra',
   'Stockholm',
-  '00000000-0000-0000-0000-000000000000', -- Replace with actual user ID
+  '00000000-0000-0000-0000-000000000001', -- Replace with actual user ID
   ARRAY['/images/trek-speed-1.jpg', '/images/trek-speed-2.jpg']
 ),
 (
@@ -399,7 +399,7 @@ INSERT INTO ads (title, description, price, category, race_type, condition, loca
   'Triathlon',
   'Som nytt',
   'Göteborg',
-  '00000000-0000-0000-0000-000000000000', -- Replace with actual user ID
+  '00000000-0000-0000-0000-000000000002', -- Replace with actual user ID
   ARRAY['/images/wetsuit-1.jpg']
 ),
 (
@@ -410,7 +410,7 @@ INSERT INTO ads (title, description, price, category, race_type, condition, loca
   'Triathlon',
   'Mycket bra',
   'Uppsala',
-  '00000000-0000-0000-0000-000000000000', -- Replace with actual user ID
+  '00000000-0000-0000-0000-000000000003', -- Replace with actual user ID
   ARRAY['/images/garmin-945-1.jpg', '/images/garmin-945-2.jpg']
 );
 ```

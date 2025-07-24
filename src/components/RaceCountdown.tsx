@@ -12,10 +12,22 @@ interface Race {
   color: string;
 }
 
+// Helper function to get current Swedish time
+const getSwedishTime = () => {
+  return new Date().toLocaleString("en-US", {timeZone: "Europe/Stockholm"});
+};
+
+// Helper function to create Swedish timezone dates
+const createSwedishDate = (dateString: string) => {
+  // Parse the date string and create a date in Swedish timezone
+  const date = new Date(dateString);
+  return date;
+};
+
 const UPCOMING_RACES: Race[] = [
   {
     name: "Vasaloppet 2025",
-    date: new Date('2025-03-02T09:00:00'),
+    date: createSwedishDate('2025-03-02T09:00:00+01:00'), // CET
     location: "Sälen - Mora",
     description: "Världens äldsta skidlopp och det med flest deltagare",
     participants: "15,800 åkare",
@@ -23,7 +35,7 @@ const UPCOMING_RACES: Race[] = [
   },
   {
     name: "Vätternrundan 2025",
-    date: new Date('2025-06-14T22:00:00'),
+    date: createSwedishDate('2025-06-14T22:00:00+02:00'), // CEST
     location: "Motala",
     description: "Världens största motionslopp på cykel - 315 km runt Vättern",
     participants: "22,000 cyklister",
@@ -31,7 +43,7 @@ const UPCOMING_RACES: Race[] = [
   },
   {
     name: "Ironman Kalmar 2025",
-    date: new Date('2025-08-16T07:00:00'),
+    date: createSwedishDate('2025-08-16T07:00:00+02:00'), // CEST
     location: "Kalmar",
     description: "Sveriges enda Ironman på full distans",
     participants: "2,850 atleter",
@@ -48,10 +60,26 @@ interface TimeLeft {
 
 const RaceCountdown = () => {
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: TimeLeft }>({});
+  const [currentSwedishTime, setCurrentSwedishTime] = useState<string>('');
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const now = new Date().getTime();
+      // Get current time in Swedish timezone
+      const swedishDate = new Date().toLocaleString("en-US", {timeZone: "Europe/Stockholm"});
+      const now = new Date(swedishDate).getTime();
+      
+      // Update current Swedish time display
+      const timeString = new Date().toLocaleString('sv-SE', {
+        timeZone: 'Europe/Stockholm',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      setCurrentSwedishTime(timeString);
+
       const newTimeLeft: { [key: string]: TimeLeft } = {};
 
       UPCOMING_RACES.forEach(race => {
@@ -82,10 +110,10 @@ const RaceCountdown = () => {
     });
   };
 
-  // Get the next race (earliest date)
-  const nextRace = UPCOMING_RACES
-    .filter(race => race.date.getTime() > new Date().getTime())
-    .sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+  // Get the next race (earliest date) using Swedish timezone
+  const currentSwedishTimeMs = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Stockholm"})).getTime();
+  const futureRaces = UPCOMING_RACES.filter(race => race.date.getTime() > currentSwedishTimeMs);
+  const nextRace = futureRaces.sort((a, b) => a.date.getTime() - b.date.getTime())[0];
 
   if (!nextRace || !timeLeft[nextRace.name]) {
     return null;
@@ -109,6 +137,19 @@ const RaceCountdown = () => {
           <Badge className="mb-4 bg-yellow-500/20 text-yellow-300 border-yellow-500/30 px-4 py-2">
             Nästa stora lopp
           </Badge>
+          
+          {/* Swedish Time Display */}
+          {currentSwedishTime && (
+            <div className="mb-4">
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2">
+                <Clock className="h-4 w-4 text-blue-200" />
+                <span className="text-sm text-blue-200">
+                  Svensk tid: {currentSwedishTime}
+                </span>
+              </div>
+            </div>
+          )}
+          
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
             {nextRace.name}
           </h2>
@@ -183,7 +224,7 @@ const RaceCountdown = () => {
             Kommande svenska lopp 2025
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {UPCOMING_RACES.map((race, index) => (
+            {futureRaces.map((race, index) => (
               <Card key={race.name} className="bg-white/5 backdrop-blur-sm border-white/10 hover:bg-white/10 transition-all duration-300 group">
                 <CardContent className="p-6">
                   <div className={`inline-flex p-2 rounded-lg bg-gradient-to-r ${race.color} mb-4 group-hover:scale-110 transition-transform duration-300`}>
@@ -209,6 +250,11 @@ const RaceCountdown = () => {
               </Card>
             ))}
           </div>
+          {futureRaces.length === 0 && (
+            <div className="text-center">
+              <p className="text-blue-200">Inga kommande lopp att visa för tillfället.</p>
+            </div>
+          )}
         </div>
       </div>
     </section>
