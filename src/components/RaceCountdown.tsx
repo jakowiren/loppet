@@ -46,7 +46,7 @@ const UPCOMING_RACES: Race[] = [
     date: createSwedishDate('2025-08-16T07:00:00+02:00'), // CEST
     location: "Kalmar",
     description: "Sveriges enda Ironman på full distans",
-    participants: "2,850 atleter",
+    participants: "Triatleter",
     color: "from-orange-600 to-red-600"
   }
 ];
@@ -60,7 +60,6 @@ interface TimeLeft {
 
 const RaceCountdown = () => {
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: TimeLeft }>({});
-  const [currentSwedishTime, setCurrentSwedishTime] = useState<string>('');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -68,17 +67,6 @@ const RaceCountdown = () => {
       const swedishDate = new Date().toLocaleString("en-US", {timeZone: "Europe/Stockholm"});
       const now = new Date(swedishDate).getTime();
       
-      // Update current Swedish time display
-      const timeString = new Date().toLocaleString('sv-SE', {
-        timeZone: 'Europe/Stockholm',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-      setCurrentSwedishTime(timeString);
 
       const newTimeLeft: { [key: string]: TimeLeft } = {};
 
@@ -138,17 +126,6 @@ const RaceCountdown = () => {
             Nästa stora lopp
           </Badge>
           
-          {/* Swedish Time Display */}
-          {currentSwedishTime && (
-            <div className="mb-4">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg px-4 py-2">
-                <Clock className="h-4 w-4 text-blue-200" />
-                <span className="text-sm text-blue-200">
-                  Svensk tid: {currentSwedishTime}
-                </span>
-              </div>
-            </div>
-          )}
           
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
             {nextRace.name}

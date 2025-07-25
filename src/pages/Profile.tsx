@@ -65,59 +65,17 @@ interface DashboardData {
   };
 }
 
-// Mock data for demonstration
+// Empty data structure - will be populated from API when backend is ready
 const MOCK_DASHBOARD_DATA: DashboardData = {
-  userAds: [
-    {
-      id: "1",
-      title: "Trek Speed Concept - Timetrial cykel",
-      description: "Professionell timetrial cykel i utmärkt skick",
-      price: 45000,
-      category: "Cyklar",
-      raceType: "Triathlon",
-      condition: "Mycket bra",
-      status: "ACTIVE",
-      createdAt: "2025-01-15",
-      views: 234,
-      favorites: 12,
-      location: "Stockholm"
-    },
-    {
-      id: "2",
-      title: "Garmin Forerunner 945",
-      description: "Komplett triathlon-klocka med alla funktioner",
-      price: 6500,
-      category: "Klockor",
-      raceType: "Triathlon",
-      condition: "Mycket bra",
-      status: "SOLD",
-      createdAt: "2025-01-10",
-      views: 156,
-      favorites: 8,
-      location: "Stockholm"
-    }
-  ],
+  userAds: [],
   favoriteAds: [],
-  recentActivity: [
-    {
-      id: "1",
-      type: "AD_CREATED",
-      adTitle: "Trek Speed Concept",
-      timestamp: "2025-01-15"
-    },
-    {
-      id: "2",
-      type: "AD_SOLD",
-      adTitle: "Garmin Forerunner 945",
-      timestamp: "2025-01-14"
-    }
-  ],
+  recentActivity: [],
   stats: {
-    totalAds: 12,
-    activeAds: 8,
-    totalViews: 1240,
-    totalSold: 4,
-    totalEarnings: 89500
+    totalAds: 0,
+    activeAds: 0,
+    totalViews: 0,
+    totalSold: 0,
+    totalEarnings: 0
   }
 };
 
@@ -128,11 +86,11 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [dashboardData] = useState<DashboardData>(MOCK_DASHBOARD_DATA);
   const [editForm, setEditForm] = useState({
-    displayName: user?.displayName || 'Jakob Wirén',
-    email: user?.email || 'jakob.wiren@example.com',
-    phone: '+46 70 123 45 67',
-    location: 'Stockholm, Sverige',
-    bio: 'Aktiv triathlet som älskar att delta i svenska lopp'
+    displayName: user?.displayName || '',
+    email: user?.email || '',
+    phone: '',
+    location: '',
+    bio: ''
   });
 
   const isOwnProfile = !username || (user && username === user.username);
@@ -143,11 +101,11 @@ const Profile = () => {
 
   const handleCancel = () => {
     setEditForm({
-      displayName: user?.displayName || 'Jakob Wirén',
-      email: user?.email || 'jakob.wiren@example.com',
-      phone: '+46 70 123 45 67',
-      location: 'Stockholm, Sverige',
-      bio: 'Aktiv triathlet som älskar att delta i svenska lopp'
+      displayName: user?.displayName || '',
+      email: user?.email || '',
+      phone: '',
+      location: '',
+      bio: ''
     });
     setIsEditing(false);
   };

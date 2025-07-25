@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,7 @@ interface NewUserData {
 const GoogleSignIn: React.FC<GoogleSignInProps> = ({ className = '' }) => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [showNewUserModal, setShowNewUserModal] = useState(false);
@@ -104,7 +105,8 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ className = '' }) => {
       toast.success('Successfully signed in!');
       
       // Redirect to intended destination or dashboard
-      const redirectTo = searchParams.get('redirect') || '/dashboard';
+      const redirectTo = searchParams.get('redirect') || 
+                        (location.pathname === '/login-to-create' ? '/skapa-annons' : '/dashboard');
       navigate(redirectTo);
     } catch (error: any) {
       console.error('Google auth error:', error);
@@ -146,7 +148,8 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ className = '' }) => {
       resetNewUserData();
       
       // Redirect to intended destination or dashboard
-      const redirectTo = searchParams.get('redirect') || '/dashboard';
+      const redirectTo = searchParams.get('redirect') || 
+                        (location.pathname === '/login-to-create' ? '/skapa-annons' : '/dashboard');
       navigate(redirectTo);
     } catch (error: any) {
       console.error('New user creation error:', error);

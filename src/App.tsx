@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Profile from "./pages/Profile";
 import Annonser from "./pages/Annonser";
 import SkapaAnnons from "./pages/SkapaAnnons";
+import LoginToCreateAd from "./pages/LoginToCreateAd";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
@@ -29,11 +30,8 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/profile/:username" element={<Profile />} />
               <Route path="/annonser" element={<Annonser />} />
-              <Route path="/skapa-annons" element={
-                <AuthGuard>
-                  <SkapaAnnons />
-                </AuthGuard>
-              } />
+              <Route path="/skapa-annons" element={<SkapaAnnons />} />
+              <Route path="/login-to-create" element={<LoginToCreateAd />} />
               <Route path="/dashboard" element={
                 <AuthGuard>
                   <Dashboard />

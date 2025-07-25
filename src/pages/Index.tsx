@@ -68,7 +68,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
             <Link to="/annonser">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-lg font-semibold shadow-lg min-w-[200px]">
+              <Button size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-lg font-semibold shadow-lg min-w-[200px]">
                 <Search className="mr-3 h-6 w-6" />
                 Sök annonser
               </Button>
@@ -261,7 +261,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link to="/annonser">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100 hover:scale-105 transition-all duration-300 px-10 py-4 text-lg font-semibold shadow-xl">
+              <Button size="lg" className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-600 hover:scale-105 transition-all duration-300 px-10 py-4 text-lg font-semibold shadow-xl">
                 Börja handla
               </Button>
             </Link>
