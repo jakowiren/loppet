@@ -41,7 +41,7 @@ const Index = () => {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Video background */}
         <video
-          src="/background.mp4"
+          src="/background-compressed.mp4"
           autoPlay
           loop
           muted
