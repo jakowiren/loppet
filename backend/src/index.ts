@@ -20,8 +20,9 @@ const PORT = process.env.PORT || 3001;
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
     ? [
-        process.env.FRONTEND_URL, 
-        process.env.FRONTEND_URL ? `https://www.${process.env.FRONTEND_URL.replace('https://', '')}` : undefined
+        'https://www.loppet.nu',
+        'https://loppet.nu',
+        process.env.FRONTEND_URL
       ].filter(Boolean) as string[]
     : ['http://localhost:5173', 'http://localhost:8080'],
   credentials: true,
