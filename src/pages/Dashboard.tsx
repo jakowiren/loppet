@@ -172,7 +172,7 @@ const Dashboard = () => {
     <div className="min-h-screen relative">
       <VideoBackground
         videoSources={[
-          { src: "/mov_bbb.mp4", type: "video/mp4" },
+          { src: "/background.mp4", type: "video/mp4" },
           { src: "/background.mov", type: "video/quicktime" }
         ]}
         fallbackImage="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
