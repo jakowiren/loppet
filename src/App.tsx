@@ -13,6 +13,10 @@ import SkapaAnnons from "./pages/SkapaAnnons";
 import LoginToCreateAd from "./pages/LoginToCreateAd";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
+import Footer from "@/components/Footer";
+import OmOss from "./pages/OmOss";
+import FAQ from "./pages/FAQ";
+
 
 const queryClient = new QueryClient();
 
@@ -23,23 +27,32 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <div className="min-h-screen bg-gray-50">
-            <Header />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/profile/:username" element={<Profile />} />
-              <Route path="/annonser" element={<Annonser />} />
-              <Route path="/skapa-annons" element={<SkapaAnnons />} />
-              <Route path="/login-to-create" element={<LoginToCreateAd />} />
-              <Route path="/dashboard" element={
-                <AuthGuard>
-                  <Dashboard />
-                </AuthGuard>
-              } />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+          <div className="flex flex-col min-h-screen">
+            <div className="min-h-screen bg-gray-50">
+              <Header />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/profile/:username" element={<Profile />} />
+                <Route path="/annonser" element={<Annonser />} />
+                <Route path="/skapa-annons" element={<SkapaAnnons />} />
+                <Route path="/login-to-create" element={<LoginToCreateAd />} />
+                <Route path="/dashboard" element={
+                  <AuthGuard>
+                    <Dashboard />
+                  </AuthGuard>
+                } />
+                <Route path="/om-oss" element={<OmOss />} />
+                <Route path="/faq" element={<FAQ />} />
+                {/* Add more routes as needed */}
+                {/* Admin route - protected */}
+                {/* Add more routes as needed */}
+                {/* Catch-all route for 404 Not Found */}
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              </div>
+            <Footer/>
           </div>
         </BrowserRouter>
       </AuthProvider>

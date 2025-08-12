@@ -252,7 +252,7 @@ const Index = () => {
         <div className="absolute inset-0 bg-black/10"></div>
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-white/5 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-yellow-400/10 rounded-full blur-3xl"></div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
+        <div className="max-w-4xl mx-auto text-center relative z-10 mt-20 mb-20">
           <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">
             Redo att börja handla?
           </h2>
