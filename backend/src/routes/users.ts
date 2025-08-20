@@ -1,4 +1,4 @@
-import express from 'express';
+import * as express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 import { authenticateToken, optionalAuth } from '../middleware/auth';
