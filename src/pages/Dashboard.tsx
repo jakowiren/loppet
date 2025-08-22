@@ -185,9 +185,9 @@ const Dashboard = () => {
       <div className="relative z-20 min-h-screen py-8 px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">Min dashboard</h1>
-            <p className="text-blue-100">Välkommen tillbaka, {user?.displayName}!</p>
+          <div className="mb-8 bg-white/90 backdrop-blur-sm px-6 py-4 rounded-lg shadow-lg">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Min dashboard</h1>
+            <p className="text-gray-700">Välkommen tillbaka, {user?.displayName}!</p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
