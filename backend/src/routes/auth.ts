@@ -96,9 +96,13 @@ router.post('/google', async (req, res) => {
         username: profile.username,
         displayName: profile.displayName,
         avatarUrl: profile.avatarUrl,
+        phone: profile.phone,
         location: profile.location,
+        bio: profile.bio,
         rating: profile.rating,
-        totalSales: profile.totalSales
+        totalSales: profile.totalSales,
+        totalEarnings: profile.totalEarnings,
+        createdAt: profile.createdAt
       }
     });
 
@@ -157,9 +161,13 @@ router.post('/verify', authenticateToken, async (req: any, res) => {
         username: true,
         displayName: true,
         avatarUrl: true,
+        phone: true,
         location: true,
+        bio: true,
         rating: true,
-        totalSales: true
+        totalSales: true,
+        totalEarnings: true,
+        createdAt: true
       }
     });
 

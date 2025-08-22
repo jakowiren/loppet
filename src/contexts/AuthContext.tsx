@@ -8,6 +8,9 @@ interface User {
   username: string;
   displayName: string;
   avatarUrl?: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
   skills: string[];
   githubUsername?: string;
   createdAt: string;
@@ -75,6 +78,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     Cookies.remove('auth_token');
     setUser(null);
+    // Redirect to homepage after logout
+    window.location.href = '/';
   };
 
   const updateUser = (userData: Partial<User>) => {

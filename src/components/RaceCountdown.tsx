@@ -2,54 +2,25 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { racesApi } from '@/lib/api';
 
 interface Race {
+  id: string;
   name: string;
-  date: Date;
-  location: string;
-  description: string;
-  participants: string;
+  date: string;
+  location: string | null;
+  description: string | null;
+  participantsCount: string | null;
   color: string;
+  isActive: boolean;
+  createdAt: string;
 }
 
-// Helper function to get current Swedish time
-const getSwedishTime = () => {
-  return new Date().toLocaleString("en-US", {timeZone: "Europe/Stockholm"});
+// Helper function to get race date as Date object
+const parseRaceDate = (dateString: string | null) => {
+  if (!dateString) return null;
+  return new Date(dateString);
 };
-
-// Helper function to create Swedish timezone dates
-const createSwedishDate = (dateString: string) => {
-  // Parse the date string and create a date in Swedish timezone
-  const date = new Date(dateString);
-  return date;
-};
-
-const UPCOMING_RACES: Race[] = [
-  {
-    name: "Vasaloppet 2025",
-    date: createSwedishDate('2025-03-02T09:00:00+01:00'), // CET
-    location: "Sälen - Mora",
-    description: "Världens äldsta skidlopp och det med flest deltagare",
-    participants: "15,800 åkare",
-    color: "from-blue-600 to-cyan-600"
-  },
-  {
-    name: "Vätternrundan 2025",
-    date: createSwedishDate('2025-06-14T22:00:00+02:00'), // CEST
-    location: "Motala",
-    description: "Världens största motionslopp på cykel - 315 km runt Vättern",
-    participants: "22,000 cyklister",
-    color: "from-green-600 to-emerald-600"
-  },
-  {
-    name: "Ironman Kalmar 2025",
-    date: createSwedishDate('2025-08-16T07:00:00+02:00'), // CEST
-    location: "Kalmar",
-    description: "Sveriges enda Ironman på full distans",
-    participants: "Triatleter",
-    color: "from-orange-600 to-red-600"
-  }
-];
 
 interface TimeLeft {
   days: number;
@@ -60,18 +31,42 @@ interface TimeLeft {
 
 const RaceCountdown = () => {
   const [timeLeft, setTimeLeft] = useState<{ [key: string]: TimeLeft }>({});
+  const [races, setRaces] = useState<Race[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch races from database
   useEffect(() => {
-    const timer = setInterval(() => {
-      // Get current time in Swedish timezone
-      const swedishDate = new Date().toLocaleString("en-US", {timeZone: "Europe/Stockholm"});
-      const now = new Date(swedishDate).getTime();
-      
+    const fetchRaces = async () => {
+      try {
+        setLoading(true);
+        const upcomingRaces = await racesApi.getUpcomingRaces();
+        setRaces(upcomingRaces);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch races:', err);
+        setError('Failed to load races');
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchRaces();
+  }, []);
+
+  // Update countdown timer
+  useEffect(() => {
+    if (races.length === 0) return;
+
+    const timer = setInterval(() => {
+      const now = new Date().getTime();
       const newTimeLeft: { [key: string]: TimeLeft } = {};
 
-      UPCOMING_RACES.forEach(race => {
-        const distance = race.date.getTime() - now;
+      races.forEach(race => {
+        const raceDate = parseRaceDate(race.date);
+        if (!raceDate) return;
+        
+        const distance = raceDate.getTime() - now;
         
         if (distance > 0) {
           newTimeLeft[race.name] = {
@@ -87,7 +82,7 @@ const RaceCountdown = () => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [races]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('sv-SE', {
@@ -98,10 +93,40 @@ const RaceCountdown = () => {
     });
   };
 
-  // Get the next race (earliest date) using Swedish timezone
-  const currentSwedishTimeMs = new Date(new Date().toLocaleString("en-US", {timeZone: "Europe/Stockholm"})).getTime();
-  const futureRaces = UPCOMING_RACES.filter(race => race.date.getTime() > currentSwedishTimeMs);
-  const nextRace = futureRaces.sort((a, b) => a.date.getTime() - b.date.getTime())[0];
+  // Show loading or error state
+  if (loading) {
+    return (
+      <section className="py-16 px-4 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+        <div className="max-w-6xl mx-auto text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-400 mx-auto mb-4"></div>
+          <p className="text-blue-200">Laddar kommande lopp...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (error || races.length === 0) {
+    return (
+      <section className="py-16 px-4 bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 text-white">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-blue-200">Inga kommande lopp att visa för tillfället.</p>
+        </div>
+      </section>
+    );
+  }
+
+  // Get the next race (earliest date)
+  const now = new Date().getTime();
+  const futureRaces = races.filter(race => {
+    const raceDate = parseRaceDate(race.date);
+    return raceDate && raceDate.getTime() > now;
+  });
+  const nextRace = futureRaces.sort((a, b) => {
+    const dateA = parseRaceDate(a.date);
+    const dateB = parseRaceDate(b.date);
+    if (!dateA || !dateB) return 0;
+    return dateA.getTime() - dateB.getTime();
+  })[0];
 
   if (!nextRace || !timeLeft[nextRace.name]) {
     return null;
@@ -130,20 +155,20 @@ const RaceCountdown = () => {
           <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
             {nextRace.name}
           </h2>
-          <p className="text-xl text-blue-100 mb-6">{nextRace.description}</p>
+          <p className="text-xl text-blue-100 mb-6">{nextRace.description || 'Ett kommande lopp'}</p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 text-blue-200 mb-8">
             <div className="flex items-center gap-2">
               <Calendar className="h-5 w-5" />
-              <span>{formatDate(nextRace.date)}</span>
+              <span>{parseRaceDate(nextRace.date) ? formatDate(parseRaceDate(nextRace.date)!) : 'Datum ej angivet'}</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="h-5 w-5" />
-              <span>{nextRace.location}</span>
+              <span>{nextRace.location || 'Plats ej angiven'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5" />
-              <span>{nextRace.participants}</span>
+              <span>{nextRace.participantsCount || 'Deltagare'}</span>
             </div>
           </div>
         </div>
@@ -208,19 +233,19 @@ const RaceCountdown = () => {
                     <Clock className="h-5 w-5 text-white" />
                   </div>
                   <h4 className="text-xl font-bold text-white mb-2">{race.name}</h4>
-                  <p className="text-blue-200 text-sm mb-3">{race.description}</p>
+                  <p className="text-blue-200 text-sm mb-3">{race.description || 'Kommande lopp'}</p>
                   <div className="space-y-2 text-sm text-blue-300">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      <span>{formatDate(race.date)}</span>
+                      <span>{parseRaceDate(race.date) ? formatDate(parseRaceDate(race.date)!) : 'Datum ej angivet'}</span>
                     </div>
-                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
-                      <span>{race.location}</span>
+                      <span>{race.location || 'Plats ej angiven'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Users className="h-4 w-4" />
-                      <span>{race.participants}</span>
+                      <span>{race.participantsCount || 'Deltagare'}</span>
                     </div>
                   </div>
                 </CardContent>
