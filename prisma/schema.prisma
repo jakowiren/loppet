@@ -173,27 +173,27 @@ enum AdCondition {
 }
 
 enum AdCategory {
-  CYKLAR                 @map("Cyklar")
-  KLADER                 @map("Kläder")
-  SKOR                   @map("Skor")
-  TILLBEHOR              @map("Tillbehör")
-  KLOCKOR                @map("Klockor")
-  HJALMAR                @map("Hjälmar")
-  V_tskor______Nutrition @map("Vätskor &\r\n  Nutrition")
-  ANNAT                  @map("Annat")
+  Cyklar              @map("Cyklar")
+  Kläder              @map("Kläder")
+  Skor                @map("Skor")
+  Tillbehör           @map("Tillbehör")
+  Klockor             @map("Klockor")
+  Hjälmar             @map("Hjälmar")
+  Vätskor_nutrition   @map("Vätskor & Nutrition")
+  Annat               @map("Annat")
 
   @@map("ad_category")
 }
 
 enum RaceType {
-  TRIATHLON     @map("Triathlon")
-  VASALOPPET    @map("Vasaloppet")
-  VATTERNRUNDAN @map("Vätternrundan")
-  IRONMAN       @map("Ironman")
-  CYKELRACE     @map("Cykelrace")
-  LOPNING       @map("Löpning")
-  SIMNING       @map("Simning")
-  MULTISPORT    @map("Multisport")
+  Triathlon
+  Vasaloppet
+  Vätternrundan
+  Ironman
+  Cykelrace
+  Löpning
+  Simning
+  Multisport
 
   @@map("race_type")
 }

@@ -26,7 +26,8 @@ const CATEGORIES = [
   "Tillbehör",
   "Klockor",
   "Hjälmar",
-  "Vätskor & Nutrition"
+  "Vätskor & Nutrition",
+  "Annat"
 ];
 
 const CONDITIONS = [
@@ -63,18 +64,16 @@ const Annonser = () => {
     const fetchAds = async () => {
       try {
         setIsLoading(true);
-        // TODO: Replace with actual API call when backend is ready
-        // const response = await adsApi.getAds({
-        //   search: searchTerm,
-        //   raceType: selectedRaceType !== "Alla typer" ? selectedRaceType : undefined,
-        //   category: selectedCategory !== "Alla kategorier" ? selectedCategory : undefined,
-        //   condition: selectedCondition !== "Alla skick" ? selectedCondition : undefined,
-        //   priceRange: selectedPriceRange !== "Alla priser" ? selectedPriceRange : undefined
-        // });
-        // setAds(response.data);
-        
-        // For now, set empty array
-        setAds([]);
+
+        const response = await adsApi.getAds({
+          search: searchTerm || undefined,
+          raceType: selectedRaceType !== "Alla typer" ? selectedRaceType : undefined,
+          category: selectedCategory !== "Alla kategorier" ? selectedCategory : undefined,
+          condition: selectedCondition !== "Alla skick" ? selectedCondition : undefined,
+          priceRange: selectedPriceRange !== "Alla priser" ? selectedPriceRange : undefined,
+        });
+
+        setAds(response.ads);
       } catch (error) {
         console.error('Error fetching ads:', error);
         setAds([]);

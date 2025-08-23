@@ -23,22 +23,22 @@ const RACE_TYPES = [
 ];
 
 const CATEGORIES = [
-  "Cyklar",
-  "Kläder",
-  "Skor", 
-  "Tillbehör",
-  "Klockor",
-  "Hjälmar",
-  "Vätskor & Nutrition",
-  "Annat"
+  { label: "Cyklar", value: "Cyklar" },
+  { label: "Kläder", value: "Kläder" },
+  { label: "Skor", value: "Skor" },
+  { label: "Tillbehör", value: "Tillbehör" },
+  { label: "Klockor", value: "Klockor" },
+  { label: "Hjälmar", value: "Hjälmar" },
+  { label: "Vätskor & Nutrition", value: "Vätskor_nutrition" },
+  { label: "Annat", value: "Annat" }
 ];
 
 const CONDITIONS = [
-  "Nytt",
-  "Som nytt",
-  "Mycket bra",
-  "Bra",
-  "Acceptabelt"
+  { label: "Nytt", value: "NYTT" },
+  { label: "Som nytt", value: "SOM_NYTT" },
+  { label: "Mycket bra", value: "MYCKET_BRA" },
+  { label: "Bra", value: "BRA" },
+  { label: "Acceptabelt", value: "ACCEPTABELT" }
 ];
 
 const LOCATIONS = [
@@ -143,22 +143,16 @@ const SkapaAnnons = () => {
     setIsSubmitting(true);
     
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // await adsApi.createAd({
-      //   title: formData.title,
-      //   description: formData.description,
-      //   price: Number(formData.price),
-      //   category: formData.category,
-      //   raceType: formData.raceType,
-      //   condition: formData.condition,
-      //   location: formData.location,
-      //   images: [] // TODO: Handle image upload
-      // });
-      
-      console.log("Submitting ad:", formData);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await adsApi.createAd({
+        title: formData.title,
+        description: formData.description,
+        price: Number(formData.price),
+        category: formData.category,
+        raceType: formData.raceType,
+        condition: formData.condition,
+        location: formData.location,
+        images: [] // TODO: Implement image upload if needed
+      });
       
       // Navigate to ads page after successful submission
       navigate("/annonser");
@@ -279,7 +273,7 @@ const SkapaAnnons = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORIES.map(category => (
-                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                        <SelectItem key={category.value} value={category.value}>{category.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -294,7 +288,7 @@ const SkapaAnnons = () => {
                     </SelectTrigger>
                     <SelectContent>
                       {CONDITIONS.map(condition => (
-                        <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                        <SelectItem key={condition.value} value={condition.value}>{condition.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
