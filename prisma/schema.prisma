@@ -179,7 +179,7 @@ enum AdCategory {
   Tillbehör           @map("Tillbehör")
   Klockor             @map("Klockor")
   Hjälmar             @map("Hjälmar")
-  Vätskor_nutrition   @map("Vätskor & Nutrition")
+  Nutrition           @map("Nutrition")
   Annat               @map("Annat")
 
   @@map("ad_category")

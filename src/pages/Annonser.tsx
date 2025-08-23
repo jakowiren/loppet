@@ -26,7 +26,7 @@ const CATEGORIES = [
   "Tillbehör",
   "Klockor",
   "Hjälmar",
-  "Vätskor & Nutrition",
+  "Nutrition",
   "Annat"
 ];
 

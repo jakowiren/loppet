@@ -98,7 +98,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- Create custom types for marketplace
 CREATE TYPE ad_status AS ENUM ('ACTIVE', 'SOLD', 'PAUSED');
 CREATE TYPE ad_condition AS ENUM ('Nytt', 'Som nytt', 'Mycket bra', 'Bra', 'Acceptabelt');
-CREATE TYPE ad_category AS ENUM ('Cyklar', 'Kläder', 'Skor', 'Tillbehör', 'Klockor', 'Hjälmar', 'Vätskor & Nutrition', 'Annat');
+CREATE TYPE ad_category AS ENUM ('Cyklar', 'Kläder', 'Skor', 'Tillbehör', 'Klockor', 'Hjälmar', 'Nutrition', 'Annat');
 CREATE TYPE race_type AS ENUM ('Triathlon', 'Vasaloppet', 'Vätternrundan', 'Ironman', 'Cykelrace', 'Löpning', 'Simning', 'Multisport');
 CREATE TYPE activity_type AS ENUM ('AD_CREATED', 'AD_SOLD', 'AD_FAVORITED', 'MESSAGE_RECEIVED', 'AD_VIEWED');
 CREATE TYPE conversation_status AS ENUM ('ACTIVE', 'CLOSED');

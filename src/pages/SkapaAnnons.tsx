@@ -29,7 +29,7 @@ const CATEGORIES = [
   { label: "Tillbehör", value: "Tillbehör" },
   { label: "Klockor", value: "Klockor" },
   { label: "Hjälmar", value: "Hjälmar" },
-  { label: "Vätskor & Nutrition", value: "Vätskor_nutrition" },
+  { label: "Nutrition", value: "Nutrition" },
   { label: "Annat", value: "Annat" }
 ];
 
