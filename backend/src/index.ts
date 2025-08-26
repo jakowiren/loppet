@@ -9,6 +9,8 @@ import adRoutes from './routes/ads';
 import raceRoutes from './routes/races';
 import adminRoutes from './routes/admin';
 import dotenv from 'dotenv';
+import dashboardRoutes from "./routes/dashboard";
+
 dotenv.config();
 
 const app = express();
@@ -39,6 +41,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/ads', adRoutes);
 app.use('/api/races', raceRoutes);
 app.use('/api/admin', adminRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {

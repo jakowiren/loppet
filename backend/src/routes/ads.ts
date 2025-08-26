@@ -198,7 +198,10 @@ router.post('/', authenticateToken, async (req: any, res) => {
       data: {
         ...adData,
         images: adData.images || [],
-        sellerId: req.userId
+        status: 'ACTIVE',
+        seller: {
+          connect: { id: req.userId }
+        }
       },
       include: {
         seller: {

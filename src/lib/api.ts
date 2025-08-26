@@ -122,9 +122,10 @@ export const userApi = {
   },
 
   getDashboardData: async () => {
-    const response = await api.get('/users/dashboard/data');
+    const response = await api.get('/dashboard');
     return response.data;
   }
+
 };
 
 // Ads API
@@ -167,9 +168,10 @@ export const adsApi = {
   },
 
   getDashboardData: async () => {
-    const response = await api.get('/ads/dashboard');
+    const response = await api.get('/dashboard');
     return response.data;
   },
+
 
   favoriteAd: async (id: string) => {
     const response = await api.post(`/ads/${id}/favorite`);
