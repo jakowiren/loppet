@@ -30,7 +30,7 @@ import {
   Clock,
   Heart
 } from "lucide-react";
-import { adsApi } from "@/lib/api";
+import { userApi, adsApi } from "@/lib/api";
 
 interface UserAd {
   id: string;
@@ -67,18 +67,35 @@ interface DashboardData {
 
 const Profile = () => {
   const { username } = useParams<{ username: string }>();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading: authIsLoading, logout, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState("aktivitet");
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [editForm, setEditForm] = useState({
-    displayName: user?.displayName || '',
-    email: user?.email || '',
+    displayName: '',
+    email: '',
     phone: '',
     location: '',
     bio: ''
   });
+
+  // Update form when user data loads
+  useEffect(() => {
+    if (user) {
+      setEditForm({
+        displayName: user.displayName || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        location: user.location || '',
+        bio: user.bio || ''
+      });
+    }
+  }, [user]);
 
   const isOwnProfile = !username || (user && username === user.username);
 
@@ -99,16 +116,63 @@ const Profile = () => {
     }
   }, [isOwnProfile]);
 
-  const handleSave = () => setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      setSaveError(null);
+      
+      const updateData = {
+        displayName: editForm.displayName,
+        phone: editForm.phone || undefined,
+        location: editForm.location || undefined,
+        bio: editForm.bio || undefined
+      };
+      
+      const response = await userApi.updateProfile(updateData);
+      
+      // Update the user in AuthContext if successful
+      if (response.user) {
+        updateUser({
+          displayName: response.user.displayName,
+          phone: response.user.phone,
+          location: response.user.location,
+          bio: response.user.bio
+        });
+      }
+      
+      setIsEditing(false);
+    } catch (error: any) {
+      console.error('Failed to save profile:', error);
+      setSaveError(error.response?.data?.error || 'Failed to save changes');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeleting(true);
+      await userApi.deleteAccount();
+      // Logout will redirect to homepage
+      logout();
+    } catch (error: any) {
+      console.error('Failed to delete account:', error);
+      alert('Failed to delete account: ' + (error.response?.data?.error || 'Unknown error'));
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
 
   const handleCancel = () => {
     setEditForm({
       displayName: user?.displayName || '',
       email: user?.email || '',
-      phone: '',
-      location: '',
-      bio: ''
+      phone: user?.phone || '',
+      location: user?.location || '',
+      bio: user?.bio || ''
     });
+    setSaveError(null);
     setIsEditing(false);
   };
 
@@ -147,9 +211,29 @@ const Profile = () => {
     }).format(price);
   };
 
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('sv-SE');
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('sv-SE');
+  };
 
-  if (!isAuthenticated && isOwnProfile) {
+  // Show loading screen while auth is initializing
+  if (authIsLoading && isOwnProfile) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-2xl mx-auto px-4">
+          <Card>
+            <CardContent className="p-8 text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <h2 className="text-xl font-medium text-gray-900 mb-2">Laddar profil...</h2>
+              <p className="text-gray-600">Väntar på inloggningsdata</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login prompt if not authenticated after loading is complete
+  if (!isAuthenticated && isOwnProfile && !authIsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-2xl mx-auto px-4">
@@ -364,12 +448,26 @@ const Profile = () => {
                           onChange={(e) => setEditForm({...editForm, bio: e.target.value})}
                         />
                       </div>
+                      {saveError && (
+                        <div className="text-red-600 text-sm p-2 bg-red-50 rounded">
+                          {saveError}
+                        </div>
+                      )}
                       <div className="flex gap-2 pt-4">
-                        <Button onClick={handleSave} className="flex items-center gap-2">
+                        <Button 
+                          onClick={handleSave} 
+                          disabled={isSaving}
+                          className="flex items-center gap-2"
+                        >
                           <Save className="h-4 w-4" />
-                          Spara
+                          {isSaving ? 'Sparar...' : 'Spara'}
                         </Button>
-                        <Button onClick={handleCancel} variant="outline" className="flex items-center gap-2">
+                        <Button 
+                          onClick={handleCancel} 
+                          variant="outline" 
+                          disabled={isSaving}
+                          className="flex items-center gap-2"
+                        >
                           <X className="h-4 w-4" />
                           Avbryt
                         </Button>
@@ -467,8 +565,40 @@ const Profile = () => {
                     <p className="text-sm text-gray-500">Hantera ditt konto och data</p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline">Exportera data</Button>
-                    <Button variant="destructive">Ta bort konto</Button>
+                    <Button 
+                      variant="destructive"
+                      onClick={() => setShowDeleteConfirm(true)}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Tar bort...' : 'Ta bort konto'}
+                    </Button>
+                    
+                    {showDeleteConfirm && (
+                      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-4">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-4">Ta bort konto</h3>
+                          <p className="text-gray-600 mb-6">
+                            Är du säker på att du vill ta bort ditt konto? Detta kan inte ångras och all din data kommer att raderas permanent.
+                          </p>
+                          <div className="flex gap-3 justify-end">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setShowDeleteConfirm(false)}
+                              disabled={isDeleting}
+                            >
+                              Avbryt
+                            </Button>
+                            <Button 
+                              variant="destructive" 
+                              onClick={handleDeleteAccount}
+                              disabled={isDeleting}
+                            >
+                              {isDeleting ? 'Tar bort...' : 'Ta bort konto'}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
