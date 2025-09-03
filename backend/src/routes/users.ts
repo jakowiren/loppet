@@ -220,4 +220,25 @@ router.get('/dashboard/stats', authenticateToken, async (req: any, res) => {
   }
 });
 
+// Delete user account
+router.delete('/account', authenticateToken, async (req: any, res) => {
+  try {
+    const userId = req.userId;
+
+    // Delete user profile and all related data (cascades will handle the rest)
+    await prisma.profile.delete({
+      where: { id: userId }
+    });
+
+    res.json({ 
+      success: true, 
+      message: 'Account deleted successfully' 
+    });
+
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
+
 export default router;

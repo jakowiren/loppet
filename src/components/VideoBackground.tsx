@@ -136,8 +136,12 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
   }, [isLoading, hasError, canPlay, userInteracted]);
 
   // Don't load video if user prefers reduced motion or has slow connection
-  const shouldShowVideo = !prefersReducedMotion && !isSlowConnection && !hasError;
+  const shouldLoadVideo = !prefersReducedMotion && !isSlowConnection && !hasError;
+  // Only show video when it's fully ready to play smoothly
+  const shouldShowVideo = shouldLoadVideo && canPlay && !isLoading;
+  
   console.log('[VideoBackground] Render', {
+    shouldLoadVideo,
     shouldShowVideo,
     isLoading,
     hasError,
@@ -147,12 +151,15 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
 
   return (
     <div className={`relative ${className}`}>
-      {/* Video Element */}
-      {shouldShowVideo && (
+      {/* Base background color to prevent flashes */}
+      <div className="absolute inset-0 w-full h-full bg-blue-900" />
+      
+      {/* Video Element - only render when ready */}
+      {shouldLoadVideo && (
         <video
           ref={videoRef}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-            canPlay && !isLoading && userInteracted ? 'opacity-100' : 'opacity-0'
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+            shouldShowVideo && userInteracted ? 'opacity-100' : 'opacity-0'
           }`}
           autoPlay
           loop
@@ -184,8 +191,8 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
 
       {/* Fallback Background Image */}
       <div 
-        className={`absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000 ${
-          shouldShowVideo && canPlay && !isLoading && userInteracted ? 'opacity-0' : 'opacity-100'
+        className={`absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
+          shouldShowVideo && userInteracted ? 'opacity-0' : 'opacity-100'
         }`}
         style={{
           backgroundImage: `url('${fallbackImage}')`,
@@ -193,7 +200,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
       />
 
       {/* Loading Indicator */}
-      {isLoading && shouldShowVideo && (
+      {isLoading && shouldLoadVideo && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="bg-black/50 rounded-full p-4">
             <Loader2 className="h-8 w-8 text-white animate-spin" />
@@ -202,7 +209,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
       )}
 
       {/* User Interaction Prompt (only show if video can play but needs interaction) */}
-      {shouldShowVideo && canPlay && !userInteracted && !isLoading && (
+      {shouldShowVideo && !userInteracted && (
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="bg-black/70 text-white px-6 py-3 rounded-lg text-center">
             <p className="text-sm">Klicka var som helst för att spela video</p>

@@ -124,6 +124,11 @@ export const userApi = {
   getDashboardData: async () => {
     const response = await api.get('/dashboard');
     return response.data;
+  },
+
+  deleteAccount: async () => {
+    const response = await api.delete('/users/account');
+    return response.data;
   }
 
 };
@@ -210,6 +215,24 @@ export const adminApi = {
     status?: string;
   }) => {
     const response = await api.get('/admin/projects/all', { params });
+    return response.data;
+  }
+};
+
+// Races API
+export const racesApi = {
+  getUpcomingRaces: async () => {
+    const response = await api.get('/races/upcoming');
+    return response.data;
+  },
+
+  getAllRaces: async () => {
+    const response = await api.get('/races');
+    return response.data;
+  },
+
+  getRace: async (id: string) => {
+    const response = await api.get(`/races/${id}`);
     return response.data;
   }
 };

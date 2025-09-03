@@ -505,55 +505,6 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="h-5 w-5" />
-                    Inställningar
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Bell className="h-4 w-4 text-gray-400" />
-                        <div>
-                          <div className="font-medium">E-postnotiser</div>
-                          <div className="text-sm text-gray-500">Få meddelanden om nya annonser</div>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">På</Button>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Shield className="h-4 w-4 text-gray-400" />
-                        <div>
-                          <div className="font-medium">Säkerhet</div>
-                          <div className="text-sm text-gray-500">Hantera lösenord och säkerhet</div>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">Ändra</Button>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Eye className="h-4 w-4 text-gray-400" />
-                        <div>
-                          <div className="font-medium">Synlighet</div>
-                          <div className="text-sm text-gray-500">Kontrollera vem som kan se din profil</div>
-                        </div>
-                      </div>
-                      <Button variant="outline" size="sm">Offentlig</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
             </div>
 
             {/* Account Actions */}
