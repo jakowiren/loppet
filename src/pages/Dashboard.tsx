@@ -66,42 +66,27 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      try {
-        setIsLoading(true);
-        // TODO: Replace with actual API call when backend is ready
-        // const data = await adsApi.getDashboardData();
-        // setDashboardData(data);
-        
-        // For now, set empty data structure
-        setDashboardData({
-          userAds: [],
-          favoriteAds: [],
-          recentActivity: [],
-          stats: {
-            totalAds: 0,
-            activeAds: 0,
-            totalViews: 0,
-            totalSold: 0,
-            totalEarnings: 0
-          }
-        });
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-        setDashboardData({
-          userAds: [],
-          favoriteAds: [],
-          recentActivity: [],
-          stats: {
-            totalAds: 0,
-            activeAds: 0,
-            totalViews: 0,
-            totalSold: 0,
-            totalEarnings: 0
-          }
-        });
-      } finally {
-        setIsLoading(false);
-      }
+    try {
+      setIsLoading(true);
+      const data = await adsApi.getDashboardData();
+      setDashboardData(data);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      setDashboardData({
+        userAds: [],
+        favoriteAds: [],
+        recentActivity: [],
+        stats: {
+          totalAds: 0,
+          activeAds: 0,
+          totalViews: 0,
+          totalSold: 0,
+          totalEarnings: 0,
+        },
+      });
+    } finally {
+      setIsLoading(false);
+    }
     };
 
     if (user) {

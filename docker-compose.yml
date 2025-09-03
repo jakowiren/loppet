@@ -20,11 +20,11 @@ services:
     stdin_open: true
     tty: true
 
-  # Backend service (Node.js + Express)
+  # Backend service (Node.js + Express)  
   backend:
     build:
-      context: ./backend
-      dockerfile: ../Dockerfile.backend
+      context: .
+      dockerfile: Dockerfile.backend
     ports:
       - "3001:3001"
     volumes:

@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
 
 // Import routes
@@ -9,12 +8,15 @@ import userRoutes from './routes/users';
 import adRoutes from './routes/ads';
 import raceRoutes from './routes/races';
 import adminRoutes from './routes/admin';
+import dotenv from 'dotenv';
+import dashboardRoutes from "./routes/dashboard";
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    log: ['query', 'info', 'warn', 'error'], // optional
+});
 const PORT = process.env.PORT || 3001;
 
 app.use(cors({
@@ -39,6 +41,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/ads', adRoutes);
 app.use('/api/races', raceRoutes);
 app.use('/api/admin', adminRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {

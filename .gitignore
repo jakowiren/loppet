@@ -47,3 +47,5 @@ railway.json
 Thumbs.db
 .vscode/settings.json
 
+
+/generated/prisma

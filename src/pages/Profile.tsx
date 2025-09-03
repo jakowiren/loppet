@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { userApi } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,9 +28,9 @@ import {
   CheckCircle,
   Package,
   Clock,
-  Heart,
-  TrendingUp
+  Heart
 } from "lucide-react";
+import { userApi, adsApi } from "@/lib/api";
 
 interface UserAd {
   id: string;
@@ -66,30 +65,17 @@ interface DashboardData {
   };
 }
 
-// Empty data structure - will be populated from API when backend is ready
-const MOCK_DASHBOARD_DATA: DashboardData = {
-  userAds: [],
-  favoriteAds: [],
-  recentActivity: [],
-  stats: {
-    totalAds: 0,
-    activeAds: 0,
-    totalViews: 0,
-    totalSold: 0,
-    totalEarnings: 0
-  }
-};
-
 const Profile = () => {
   const { username } = useParams<{ username: string }>();
-  const { user, isAuthenticated, isLoading, logout, updateUser } = useAuth();
+  const { user, isAuthenticated, isLoading: authIsLoading, logout, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState("aktivitet");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [dashboardData] = useState<DashboardData>(MOCK_DASHBOARD_DATA);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [editForm, setEditForm] = useState({
     displayName: '',
     email: '',
@@ -112,6 +98,23 @@ const Profile = () => {
   }, [user]);
 
   const isOwnProfile = !username || (user && username === user.username);
+
+  useEffect(() => {
+    if (isOwnProfile) {
+      const fetchDashboard = async () => {
+        try {
+          setIsLoading(true);
+          const data = await adsApi.getDashboardData();
+          setDashboardData(data);
+        } catch (error) {
+          console.error("Failed to fetch dashboard:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchDashboard();
+    }
+  }, [isOwnProfile]);
 
   const handleSave = async () => {
     try {
@@ -175,40 +178,28 @@ const Profile = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'SOLD':
-        return <Package className="h-4 w-4 text-blue-500" />;
-      case 'PAUSED':
-        return <Clock className="h-4 w-4 text-yellow-500" />;
-      default:
-        return null;
+      case 'ACTIVE': return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'SOLD': return <Package className="h-4 w-4 text-blue-500" />;
+      case 'PAUSED': return <Clock className="h-4 w-4 text-yellow-500" />;
+      default: return null;
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'Aktiv';
-      case 'SOLD':
-        return 'Såld';
-      case 'PAUSED':
-        return 'Pausad';
-      default:
-        return status;
+      case 'ACTIVE': return 'Aktiv';
+      case 'SOLD': return 'Såld';
+      case 'PAUSED': return 'Pausad';
+      default: return status;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'bg-green-100 text-green-800';
-      case 'SOLD':
-        return 'bg-blue-100 text-blue-800';
-      case 'PAUSED':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+      case 'ACTIVE': return 'bg-green-100 text-green-800';
+      case 'SOLD': return 'bg-blue-100 text-blue-800';
+      case 'PAUSED': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -225,7 +216,7 @@ const Profile = () => {
   };
 
   // Show loading screen while auth is initializing
-  if (isLoading && isOwnProfile) {
+  if (authIsLoading && isOwnProfile) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-2xl mx-auto px-4">
@@ -242,7 +233,7 @@ const Profile = () => {
   }
 
   // Show login prompt if not authenticated after loading is complete
-  if (!isAuthenticated && isOwnProfile && !isLoading) {
+  if (!isAuthenticated && isOwnProfile && !authIsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-2xl mx-auto px-4">
@@ -250,9 +241,7 @@ const Profile = () => {
             <CardContent className="p-8 text-center">
               <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Logga in för att se din profil</h2>
-              <p className="text-gray-600">
-                Logga in för att se och redigera din profil, kontaktinformation och inställningar.
-              </p>
+              <p className="text-gray-600">Logga in för att se och redigera din profil, kontaktinformation och inställningar.</p>
             </CardContent>
           </Card>
         </div>
@@ -286,8 +275,7 @@ const Profile = () => {
                   variant="outline"
                   className="flex items-center gap-2 text-red-600 hover:bg-red-50 hover:text-red-700"
                 >
-                  <LogOut className="h-4 w-4" />
-                  Logga ut
+                  <LogOut className="h-4 w-4" /> Logga ut
                 </Button>
               )}
             </div>
@@ -298,113 +286,111 @@ const Profile = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="aktivitet" className="flex items-center gap-2">
-              <Activity className="h-4 w-4" />
-              Aktivitet
+              <Activity className="h-4 w-4" /> Aktivitet
             </TabsTrigger>
             <TabsTrigger value="installningar" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Inställningar
+              <Settings className="h-4 w-4" /> Inställningar
             </TabsTrigger>
           </TabsList>
 
-          {/* Activity Tab - Dashboard Content */}
+          {/* Activity Tab */}
           <TabsContent value="aktivitet" className="mt-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* User's Ads */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <ShoppingBag className="h-5 w-5" />
-                    Mina annonser
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {dashboardData.userAds.length === 0 ? (
-                    <div className="text-center py-8">
-                      <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 mb-4">Du har inga annonser än</p>
-                      <Button>Skapa din första annons</Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {dashboardData.userAds.slice(0, 3).map((ad) => (
-                        <div key={ad.id} className="border border-gray-200 rounded-lg p-4">
-                          <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-semibold text-gray-900">{ad.title}</h3>
-                            <div className="flex items-center gap-2">
-                              {getStatusIcon(ad.status)}
-                              <Badge className={getStatusColor(ad.status)}>
-                                {getStatusLabel(ad.status)}
-                              </Badge>
+            {isLoading ? (
+              <p>Laddar dashboard...</p>
+            ) : dashboardData ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* User's Ads */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <ShoppingBag className="h-5 w-5" /> Mina annonser
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {dashboardData.userAds.length === 0 ? (
+                      <div className="text-center py-8">
+                        <ShoppingBag className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-4">Du har inga annonser än</p>
+                        <Button>Skapa din första annons</Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {dashboardData.userAds.slice(0, 3).map((ad) => (
+                          <div key={ad.id} className="border border-gray-200 rounded-lg p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="font-semibold text-gray-900">{ad.title}</h3>
+                              <div className="flex items-center gap-2">
+                                {getStatusIcon(ad.status)}
+                                <Badge className={getStatusColor(ad.status)}>
+                                  {getStatusLabel(ad.status)}
+                                </Badge>
+                              </div>
+                            </div>
+                            <p className="text-gray-600 text-sm mb-3">{ad.description}</p>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
+                              <div className="flex items-center gap-4 text-gray-500">
+                                <span className="flex items-center gap-1">
+                                  <Eye className="h-4 w-4" /> {ad.views}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Heart className="h-4 w-4" /> {ad.favorites}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                          <p className="text-gray-600 text-sm mb-3">{ad.description}</p>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
-                            <div className="flex items-center gap-4 text-gray-500">
-                              <span className="flex items-center gap-1">
-                                <Eye className="h-4 w-4" />
-                                {ad.views}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Heart className="h-4 w-4" />
-                                {ad.favorites}
-                              </span>
-                            </div>
+                        ))}
+                        {dashboardData.userAds.length > 3 && (
+                          <div className="text-center pt-4">
+                            <Button variant="outline" size="sm">
+                              Visa alla annonser ({dashboardData.userAds.length})
+                            </Button>
                           </div>
-                        </div>
-                      ))}
-                      {dashboardData.userAds.length > 3 && (
-                        <div className="text-center pt-4">
-                          <Button variant="outline" size="sm">
-                            Visa alla annonser ({dashboardData.userAds.length})
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-              {/* Recent Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Senaste aktivitet
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {dashboardData.recentActivity.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">Ingen aktivitet än</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {dashboardData.recentActivity.map((activity) => (
-                        <div key={activity.id} className="flex items-start gap-3">
-                          <div className="p-2 bg-blue-100 rounded-full">
-                            <Calendar className="h-4 w-4 text-blue-600" />
+                {/* Recent Activity */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5" /> Senaste aktivitet
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {dashboardData.recentActivity.length === 0 ? (
+                      <div className="text-center py-8">
+                        <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Ingen aktivitet än</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {dashboardData.recentActivity.map((activity) => (
+                          <div key={activity.id} className="flex items-start gap-3">
+                            <div className="p-2 bg-blue-100 rounded-full">
+                              <Calendar className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm text-gray-900">
+                                {activity.type === 'AD_CREATED' && `Skapade annons "${activity.adTitle}"`}
+                                {activity.type === 'AD_SOLD' && `Sålde "${activity.adTitle}"`}
+                                {activity.type === 'AD_FAVORITED' && `Någon gillade "${activity.adTitle}"`}
+                                {activity.type === 'MESSAGE_RECEIVED' && `Fick meddelande om "${activity.adTitle}"`}
+                              </p>
+                              <p className="text-xs text-gray-500">{formatDate(activity.timestamp)}</p>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <p className="text-sm text-gray-900">
-                              {activity.type === 'AD_CREATED' && `Skapade annons "${activity.adTitle}"`}
-                              {activity.type === 'AD_SOLD' && `Sålde "${activity.adTitle}"`}
-                              {activity.type === 'AD_FAVORITED' && `Någon gillade "${activity.adTitle}"`}
-                              {activity.type === 'MESSAGE_RECEIVED' && `Fick meddelande om "${activity.adTitle}"`}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {formatDate(activity.timestamp)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <p>Misslyckades att ladda dashboard.</p>
+            )}
           </TabsContent>
 
           {/* Settings Tab */}

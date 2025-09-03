@@ -1,4 +1,4 @@
-import express from 'express';
+import * as express from 'express';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaClient } from '@prisma/client';

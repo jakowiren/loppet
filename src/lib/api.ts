@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
 
 // Create axios instance
 export const api = axios.create({
@@ -122,7 +122,7 @@ export const userApi = {
   },
 
   getDashboardData: async () => {
-    const response = await api.get('/users/dashboard/data');
+    const response = await api.get('/dashboard');
     return response.data;
   },
 
@@ -130,6 +130,7 @@ export const userApi = {
     const response = await api.delete('/users/account');
     return response.data;
   }
+
 };
 
 // Ads API
@@ -172,9 +173,10 @@ export const adsApi = {
   },
 
   getDashboardData: async () => {
-    const response = await api.get('/ads/dashboard');
+    const response = await api.get('/dashboard');
     return response.data;
   },
+
 
   favoriteAd: async (id: string) => {
     const response = await api.post(`/ads/${id}/favorite`);
