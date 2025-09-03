@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Heart, MapPin, Clock, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Ad {
   id: string;
@@ -27,6 +28,12 @@ interface AdCardProps {
 }
 
 const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
+  const navigate = useNavigate();
+
+  const handleNavigate = () => {
+    navigate(`/annonser/${ad.id}`);
+  };
+
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -53,7 +60,7 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200 hover:border-blue-300">
+    <Card onClick={handleNavigate} className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200 hover:border-blue-300">
       <CardHeader className="p-0 relative">
         <div className="relative h-48 overflow-hidden rounded-t-lg">
           <img
@@ -114,7 +121,12 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
             <div className="text-sm text-gray-500">
               Säljare: {ad.seller.name} ⭐ {ad.seller.rating}
             </div>
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-700"
+            onClick={(e) => {
+              e.stopPropagation(); // prevent card click if you only want button click
+              handleNavigate();
+            }}
+          >
               <Eye className="h-4 w-4 mr-1" />
               Visa
             </Button>
