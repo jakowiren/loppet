@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, MessageCircle } from "lucide-react";
+import { Heart, MapPin, Clock, Eye } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Ad {
   id: string;
@@ -24,26 +25,25 @@ interface AdCardProps {
   ad: Ad;
   onFavorite?: (id: string) => void;
   isFavorited?: boolean;
-  onContactSeller?: (id: string) => void;
 }
 
-const AdCard = ({ ad, onFavorite, isFavorited = false, onContactSeller }: AdCardProps) => {
+const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
+  const navigate = useNavigate();
+
+  const handleNavigate = () => {
+    navigate(`/annonser/${ad.id}`);
+  };
+
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onFavorite?.(ad.id);
   };
 
-  const handleContactSeller = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onContactSeller?.(ad.id);
-  };
-
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: 'SEK',
+    return new Intl.NumberFormat("sv-SE", {
+      style: "currency",
+      currency: "SEK",
       minimumFractionDigits: 0,
     }).format(price);
   };
@@ -51,16 +51,21 @@ const AdCard = ({ ad, onFavorite, isFavorited = false, onContactSeller }: AdCard
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-    
-    if (diffInDays === 0) return 'Idag';
-    if (diffInDays === 1) return 'Igår';
+    const diffInDays = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (diffInDays === 0) return "Idag";
+    if (diffInDays === 1) return "Igår";
     if (diffInDays < 7) return `${diffInDays} dagar sedan`;
-    return date.toLocaleDateString('sv-SE');
+    return date.toLocaleDateString("sv-SE");
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200 hover:border-blue-300">
+    <Card
+      onClick={handleNavigate}
+      className="group hover:shadow-lg transition-all duration-300 cursor-pointer bg-white border-gray-200 hover:border-blue-300"
+    >
       <CardHeader className="p-0 relative">
         <div className="relative h-48 overflow-hidden rounded-t-lg bg-gray-200 flex items-center justify-center">
           <div className="text-gray-500 text-center">
@@ -70,12 +75,14 @@ const AdCard = ({ ad, onFavorite, isFavorited = false, onContactSeller }: AdCard
           <button
             onClick={handleFavorite}
             className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-sm transition-colors ${
-              isFavorited 
-                ? 'bg-red-500 text-white' 
-                : 'bg-white/80 text-gray-700 hover:bg-red-500 hover:text-white'
+              isFavorited
+                ? "bg-red-500 text-white"
+                : "bg-white/80 text-gray-700 hover:bg-red-500 hover:text-white"
             }`}
           >
-            <Heart className={`h-4 w-4 ${isFavorited ? 'fill-current' : ''}`} />
+            <Heart
+              className={`h-4 w-4 ${isFavorited ? "fill-current" : ""}`}
+            />
           </button>
           <div className="absolute top-2 left-2">
             <Badge variant="secondary" className="bg-blue-600 text-white">
@@ -89,7 +96,7 @@ const AdCard = ({ ad, onFavorite, isFavorited = false, onContactSeller }: AdCard
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="p-4">
         <div className="space-y-3">
           <div>
@@ -100,7 +107,7 @@ const AdCard = ({ ad, onFavorite, isFavorited = false, onContactSeller }: AdCard
               {formatPrice(ad.price)}
             </p>
           </div>
-          
+
           <div className="flex items-center gap-4 text-sm text-gray-600">
             <div className="flex items-center gap-1">
               <MapPin className="h-4 w-4" />
@@ -111,23 +118,15 @@ const AdCard = ({ ad, onFavorite, isFavorited = false, onContactSeller }: AdCard
               <span>{formatDate(ad.postedDate)}</span>
             </div>
           </div>
-          
+
           <p className="text-sm text-gray-600 line-clamp-2">
             {ad.description}
           </p>
-          
+
           <div className="flex items-center justify-between pt-2">
             <div className="text-sm text-gray-500">
               Säljare: {ad.seller.name} ⭐ {ad.seller.rating}
             </div>
-            <Button 
-              size="sm" 
-              className="bg-green-600 hover:bg-green-700"
-              onClick={handleContactSeller}
-            >
-              <MessageCircle className="h-4 w-4 mr-1" />
-              Kontakta säljare
-            </Button>
           </div>
         </div>
       </CardContent>
