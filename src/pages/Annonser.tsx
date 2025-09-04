@@ -56,7 +56,6 @@ const Annonser = () => {
   const [selectedCategory, setSelectedCategory] = useState("Alla kategorier");
   const [selectedCondition, setSelectedCondition] = useState("Alla skick");
   const [selectedPriceRange, setSelectedPriceRange] = useState("Alla priser");
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [ads, setAds] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -85,14 +84,19 @@ const Annonser = () => {
     fetchAds();
   }, [searchTerm, selectedRaceType, selectedCategory, selectedCondition, selectedPriceRange]);
 
-  const handleFavorite = (id: string) => {
-    const newFavorites = new Set(favorites);
-    if (newFavorites.has(id)) {
-      newFavorites.delete(id);
-    } else {
-      newFavorites.add(id);
+  const handleFavorite = async (id: string) => {
+    try {
+      const result = await adsApi.toggleFavorite(id);
+      
+      // Update the local state
+      setAds(prevAds => prevAds.map(ad => 
+        ad.id === id 
+          ? { ...ad, isFavorited: result.isFavorited }
+          : ad
+      ));
+    } catch (error) {
+      console.error('Failed to toggle favorite:', error);
     }
-    setFavorites(newFavorites);
   };
 
   const filteredAds = ads;
@@ -196,7 +200,7 @@ const Annonser = () => {
               key={ad.id}
               ad={ad}
               onFavorite={handleFavorite}
-              isFavorited={favorites.has(ad.id)}
+              isFavorited={ad.isFavorited}
             />
           ))}
         </div>

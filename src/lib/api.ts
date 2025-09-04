@@ -178,13 +178,8 @@ export const adsApi = {
   },
 
 
-  favoriteAd: async (id: string) => {
+  toggleFavorite: async (id: string) => {
     const response = await api.post(`/ads/${id}/favorite`);
-    return response.data;
-  },
-
-  unfavoriteAd: async (id: string) => {
-    const response = await api.delete(`/ads/${id}/favorite`);
     return response.data;
   }
 };

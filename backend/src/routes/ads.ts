@@ -37,7 +37,7 @@ const searchAdsSchema = z.object({
 });
 
 // Get all active ads with search and filtering
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req: any, res) => {
   try {
     const {
       search,
@@ -102,10 +102,30 @@ router.get('/', async (req, res) => {
       prisma.ad.count({ where })
     ]);
 
+    // Get user's favorites if authenticated
+    let userFavorites: Set<string> = new Set();
+    if (req.userId) {
+      const favorites = await prisma.favorite.findMany({
+        where: { userId: req.userId },
+        select: { adId: true }
+      });
+      userFavorites = new Set(favorites.map(f => f.adId));
+    }
+
+    // Sort ads to put favorites first if user is authenticated
+    const sortedAds = req.userId 
+      ? ads.sort((a, b) => {
+          const aFav = userFavorites.has(a.id) ? 1 : 0;
+          const bFav = userFavorites.has(b.id) ? 1 : 0;
+          return bFav - aFav; // Favorites first
+        })
+      : ads;
+
     res.json({
-      ads: ads.map(ad => ({
+      ads: sortedAds.map(ad => ({
         ...ad,
-        favoritesCount: ad._count.favorites
+        favoritesCount: ad._count.favorites,
+        isFavorited: userFavorites.has(ad.id)
       })),
       pagination: {
         page,
