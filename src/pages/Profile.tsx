@@ -28,9 +28,10 @@ import {
   CheckCircle,
   Package,
   Clock,
-  Heart
+  Heart,
+  MessageCircle
 } from "lucide-react";
-import { userApi, adsApi } from "@/lib/api";
+import { userApi, adsApi, messagesApi } from "@/lib/api";
 
 interface UserAd {
   id: string;
@@ -76,6 +77,10 @@ const Profile = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
   const [editForm, setEditForm] = useState({
     displayName: '',
     email: '',
@@ -115,6 +120,35 @@ const Profile = () => {
       fetchDashboard();
     }
   }, [isOwnProfile]);
+
+  // Load conversations when messages tab is active
+  useEffect(() => {
+    if (activeTab === 'meddelanden' && isOwnProfile) {
+      loadConversations();
+    }
+  }, [activeTab, isOwnProfile]);
+
+  const loadConversations = async () => {
+    try {
+      const response = await messagesApi.getConversations();
+      setConversations(response.conversations || []);
+    } catch (error) {
+      console.error('Failed to load conversations:', error);
+    }
+  };
+
+  const loadMessages = async (conversationId: string) => {
+    try {
+      setLoadingMessages(true);
+      const response = await messagesApi.getMessages(conversationId);
+      setMessages(response.messages || []);
+      setSelectedConversation(conversationId);
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -284,9 +318,12 @@ const Profile = () => {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="aktivitet" className="flex items-center gap-2">
               <Activity className="h-4 w-4" /> Aktivitet
+            </TabsTrigger>
+            <TabsTrigger value="meddelanden" className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" /> Meddelanden
             </TabsTrigger>
             <TabsTrigger value="installningar" className="flex items-center gap-2">
               <Settings className="h-4 w-4" /> Inställningar
@@ -391,6 +428,136 @@ const Profile = () => {
             ) : (
               <p>Misslyckades att ladda dashboard.</p>
             )}
+          </TabsContent>
+
+          {/* Messages Tab */}
+          <TabsContent value="meddelanden" className="mt-6">
+            <div className="grid lg:grid-cols-3 gap-6 h-[600px]">
+              {/* Conversations List */}
+              <div className="lg:col-span-1">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageCircle className="h-5 w-5" />
+                      Konversationer
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="max-h-[500px] overflow-y-auto">
+                      {conversations.length === 0 ? (
+                        <div className="p-4 text-center text-gray-500">
+                          <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                          <p>Inga meddelanden än</p>
+                          <p className="text-sm">Dina konversationer visas här</p>
+                        </div>
+                      ) : (
+                        conversations.map((conversation) => (
+                          <div
+                            key={conversation.id}
+                            onClick={() => loadMessages(conversation.id)}
+                            className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors ${
+                              selectedConversation === conversation.id ? 'bg-blue-50 border-blue-200' : ''
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <Avatar className="h-10 w-10 flex-shrink-0">
+                                <AvatarImage src={conversation.otherUser.avatarUrl} />
+                                <AvatarFallback>
+                                  {conversation.otherUser.displayName?.[0] || conversation.otherUser.username?.[0] || 'U'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between">
+                                  <p className="font-medium text-gray-900 truncate">
+                                    {conversation.otherUser.displayName || conversation.otherUser.username}
+                                  </p>
+                                  <span className="text-xs text-gray-500 flex-shrink-0">
+                                    {new Date(conversation.lastMessageAt).toLocaleDateString('sv-SE')}
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-600 truncate">
+                                  {conversation.ad.title}
+                                </p>
+                                {conversation.lastMessage && (
+                                  <p className="text-sm text-gray-500 truncate mt-1">
+                                    {conversation.lastMessage.content}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Messages View */}
+              <div className="lg:col-span-2">
+                <Card className="h-full">
+                  <CardHeader>
+                    <CardTitle>
+                      {selectedConversation 
+                        ? conversations.find(c => c.id === selectedConversation)?.ad.title || 'Meddelanden'
+                        : 'Välj en konversation'
+                      }
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-[500px] flex flex-col">
+                    {!selectedConversation ? (
+                      <div className="flex-1 flex items-center justify-center text-gray-500">
+                        <div className="text-center">
+                          <MessageCircle className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                          <p>Välj en konversation för att visa meddelanden</p>
+                        </div>
+                      </div>
+                    ) : loadingMessages ? (
+                      <div className="flex-1 flex items-center justify-center">
+                        <div className="text-center">
+                          <Clock className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-600" />
+                          <p className="text-gray-500">Laddar meddelanden...</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+                        {messages.map((message) => (
+                          <div
+                            key={message.id}
+                            className={`flex ${message.fromUserId === user?.id ? 'justify-end' : 'justify-start'}`}
+                          >
+                            <div
+                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                                message.fromUserId === user?.id
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-200 text-gray-900'
+                              }`}
+                            >
+                              <p className="text-sm">{message.content}</p>
+                              <p className={`text-xs mt-1 ${
+                                message.fromUserId === user?.id ? 'text-blue-200' : 'text-gray-500'
+                              }`}>
+                                {new Date(message.sentAt).toLocaleString('sv-SE', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                        {messages.length === 0 && (
+                          <div className="text-center text-gray-500 py-8">
+                            <p>Inga meddelanden i denna konversation än</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </TabsContent>
 
           {/* Settings Tab */}
