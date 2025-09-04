@@ -50,29 +50,15 @@ router.post('/google', async (req, res) => {
     });
 
     if (!profile) {
-      // Check if username is provided for new users
-      if (!username) {
-        return res.status(400).json({ 
-          error: 'Username required for new users',
-          needsUsername: true 
-        });
-      }
-
-      // Check if username is already taken
-      const existingUsername = await prisma.profile.findUnique({
-        where: { username }
-      });
-
-      if (existingUsername) {
-        return res.status(400).json({ error: 'Username already taken' });
-      }
-
+      // Auto-generate username from email
+      const generatedUsername = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+      
       // Create new profile
       profile = await prisma.profile.create({
         data: {
           email,
-          username,
-          displayName: name || username,
+          username: generatedUsername,
+          displayName: name || generatedUsername,
           avatarUrl: picture || null,
           phone: phone || null,
           location: location || null,
