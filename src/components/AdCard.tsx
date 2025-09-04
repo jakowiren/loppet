@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Heart, MapPin, Clock, Eye } from "lucide-react";
+import { Heart, MapPin, Clock, MessageCircle } from "lucide-react";
 
 interface Ad {
   id: string;
@@ -24,13 +24,20 @@ interface AdCardProps {
   ad: Ad;
   onFavorite?: (id: string) => void;
   isFavorited?: boolean;
+  onContactSeller?: (id: string) => void;
 }
 
-const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
+const AdCard = ({ ad, onFavorite, isFavorited = false, onContactSeller }: AdCardProps) => {
   const handleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     onFavorite?.(ad.id);
+  };
+
+  const handleContactSeller = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onContactSeller?.(ad.id);
   };
 
   const formatPrice = (price: number) => {
@@ -113,9 +120,13 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
             <div className="text-sm text-gray-500">
               Säljare: {ad.seller.name} ⭐ {ad.seller.rating}
             </div>
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-              <Eye className="h-4 w-4 mr-1" />
-              Visa
+            <Button 
+              size="sm" 
+              className="bg-green-600 hover:bg-green-700"
+              onClick={handleContactSeller}
+            >
+              <MessageCircle className="h-4 w-4 mr-1" />
+              Kontakta säljare
             </Button>
           </div>
         </div>

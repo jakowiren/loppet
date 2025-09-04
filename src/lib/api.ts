@@ -232,4 +232,22 @@ export const racesApi = {
   }
 };
 
+// Messages API
+export const messagesApi = {
+  sendMessage: async (adId: string, content: string) => {
+    const response = await api.post('/messages/send', { adId, content });
+    return response.data;
+  },
+
+  getConversations: async () => {
+    const response = await api.get('/messages/conversations');
+    return response.data;
+  },
+
+  getMessages: async (conversationId: string) => {
+    const response = await api.get(`/messages/conversations/${conversationId}/messages`);
+    return response.data;
+  }
+};
+
 export default api;

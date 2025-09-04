@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import AdCard from "@/components/AdCard";
+import MessageDialog from "@/components/MessageDialog";
 
 const RACE_TYPES = [
   "Alla typer",
@@ -58,6 +59,17 @@ const Annonser = () => {
   const [selectedPriceRange, setSelectedPriceRange] = useState("Alla priser");
   const [ads, setAds] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [messageDialog, setMessageDialog] = useState<{
+    open: boolean;
+    adId: string;
+    adTitle: string;
+    sellerName: string;
+  }>({
+    open: false,
+    adId: '',
+    adTitle: '',
+    sellerName: ''
+  });
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -96,6 +108,18 @@ const Annonser = () => {
       ));
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
+    }
+  };
+
+  const handleContactSeller = (id: string) => {
+    const ad = ads.find(ad => ad.id === id);
+    if (ad) {
+      setMessageDialog({
+        open: true,
+        adId: id,
+        adTitle: ad.title,
+        sellerName: ad.seller.displayName || ad.seller.username
+      });
     }
   };
 
@@ -201,6 +225,7 @@ const Annonser = () => {
               ad={ad}
               onFavorite={handleFavorite}
               isFavorited={ad.isFavorited}
+              onContactSeller={handleContactSeller}
             />
           ))}
         </div>
@@ -215,6 +240,14 @@ const Annonser = () => {
           </div>
         )}
       </div>
+
+      <MessageDialog
+        open={messageDialog.open}
+        onOpenChange={(open) => setMessageDialog(prev => ({ ...prev, open }))}
+        adId={messageDialog.adId}
+        adTitle={messageDialog.adTitle}
+        sellerName={messageDialog.sellerName}
+      />
     </div>
   );
 };
