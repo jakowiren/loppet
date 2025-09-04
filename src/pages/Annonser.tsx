@@ -111,18 +111,6 @@ const Annonser = () => {
     }
   };
 
-  const handleContactSeller = (id: string) => {
-    const ad = ads.find(ad => ad.id === id);
-    if (ad) {
-      setMessageDialog({
-        open: true,
-        adId: id,
-        adTitle: ad.title,
-        sellerName: ad.seller.displayName || ad.seller.username
-      });
-    }
-  };
-
   const filteredAds = ads;
 
   const clearFilters = () => {
@@ -225,7 +213,6 @@ const Annonser = () => {
               ad={ad}
               onFavorite={handleFavorite}
               isFavorited={ad.isFavorited}
-              onContactSeller={handleContactSeller}
             />
           ))}
         </div>

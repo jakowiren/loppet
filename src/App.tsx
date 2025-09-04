@@ -16,6 +16,7 @@ import NotFound from "./pages/NotFound";
 import Footer from "@/components/Footer";
 import OmOss from "./pages/OmOss";
 import FAQ from "./pages/FAQ";
+import AdDetails from "./pages/AdDetails";
 
 
 const queryClient = new QueryClient();
@@ -44,6 +45,7 @@ const App = () => (
                 } />
                 <Route path="/om-oss" element={<OmOss />} />
                 <Route path="/faq" element={<FAQ />} />
+                <Route path="/annonser/:id" element={<AdDetails />} />
                 {/* Add more routes as needed */}
                 {/* Admin route - protected */}
                 {/* Add more routes as needed */}
