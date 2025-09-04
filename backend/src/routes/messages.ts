@@ -210,4 +210,68 @@ router.get('/conversations/:conversationId/messages', authenticateToken, async (
   }
 });
 
+// Send message in an existing conversation
+router.post('/conversations/:conversationId/messages', authenticateToken, async (req: any, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { content } = z.object({
+      content: z.string().min(1).max(1000)
+    }).parse(req.body);
+
+    const userId = req.userId;
+
+    // Check user belongs to this conversation
+    const conversation = await prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        OR: [
+          { buyerId: userId },
+          { sellerId: userId }
+        ]
+      }
+    });
+
+    if (!conversation) {
+      return res.status(404).json({ error: 'Conversation not found' });
+    }
+
+    // Create new message
+    const message = await prisma.message.create({
+      data: {
+        conversationId,
+        fromUserId: userId,
+        content
+      },
+      include: {
+        fromUser: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true
+          }
+        }
+      }
+    });
+
+    // Update last message timestamp
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { lastMessageAt: new Date() }
+    });
+
+    res.json({ message });
+  } catch (error: any) {
+    console.error('Send conversation message error:', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({
+        error: 'Validation error',
+        details: error.errors
+      });
+    }
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
+
 export default router;

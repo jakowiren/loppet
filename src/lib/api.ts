@@ -247,6 +247,12 @@ export const messagesApi = {
   getMessages: async (conversationId: string) => {
     const response = await api.get(`/messages/conversations/${conversationId}/messages`);
     return response.data;
+  },
+
+  // send a message in an existing conversation
+  sendMessageInConversation: async (conversationId: string, content: string) => {
+    const response = await api.post(`/messages/conversations/${conversationId}/messages`, { content });
+    return response.data;
   }
 };
 
