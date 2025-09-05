@@ -9,7 +9,7 @@ interface Ad {
   title: string;
   price: number;
   location: string;
-  postedDate: string;
+  createdAt: string;
   category: string;
   raceType: string;
   condition: string;
@@ -51,7 +51,13 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
   };
 
   const formatDate = (dateString: string) => {
+    if (!dateString) return "Okänt datum";
+    
     const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) return "Okänt datum";
+    
     const now = new Date();
     const diffInDays = Math.floor(
       (now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
@@ -117,7 +123,7 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
             </div>
             <div className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              <span>{formatDate(ad.postedDate)}</span>
+              <span>{formatDate(ad.createdAt)}</span>
             </div>
           </div>
 
