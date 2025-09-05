@@ -16,8 +16,10 @@ interface Ad {
   images: string[];
   description: string;
   seller: {
-    name: string;
+    displayName: string;
+    username: string;
     rating: number;
+    email: string;
   };
 }
 
@@ -125,7 +127,7 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
 
           <div className="flex items-center justify-between pt-2">
             <div className="text-sm text-gray-500">
-              Säljare: {ad.seller.name} ⭐ {ad.seller.rating}
+              Säljare: {ad.seller.email}
             </div>
           </div>
         </div>

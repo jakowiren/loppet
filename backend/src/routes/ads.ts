@@ -91,7 +91,8 @@ router.get('/', optionalAuth, async (req: any, res) => {
               displayName: true,
               avatarUrl: true,
               rating: true,
-              location: true
+              location: true,
+              email: true
             }
           },
           _count: {
@@ -164,7 +165,8 @@ router.get('/:id', optionalAuth, async (req: any, res) => {
             rating: true,
             location: true,
             totalSales: true,
-            createdAt: true
+            createdAt: true,
+            email: true
           }
         },
         _count: {
@@ -231,7 +233,8 @@ router.post('/', authenticateToken, async (req: any, res) => {
             displayName: true,
             avatarUrl: true,
             rating: true,
-            location: true
+            location: true,
+            email: true
           }
         }
       }
@@ -282,7 +285,8 @@ router.put('/:id', authenticateToken, async (req: any, res) => {
             displayName: true,
             avatarUrl: true,
             rating: true,
-            location: true
+            location: true,
+            email: true
           }
         }
       }
