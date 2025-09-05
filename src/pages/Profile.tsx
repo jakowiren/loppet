@@ -32,6 +32,8 @@ import {
   MessageCircle
 } from "lucide-react";
 import { userApi, adsApi, messagesApi } from "@/lib/api";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 
 interface UserAd {
   id: string;
@@ -164,7 +166,6 @@ const Profile = () => {
       
       const response = await userApi.updateProfile(updateData);
       
-      // Update the user in AuthContext if successful
       if (response.user) {
         updateUser({
           displayName: response.user.displayName,
@@ -187,7 +188,6 @@ const Profile = () => {
     try {
       setIsDeleting(true);
       await userApi.deleteAccount();
-      // Logout will redirect to homepage
       logout();
     } catch (error: any) {
       console.error('Failed to delete account:', error);
@@ -249,6 +249,84 @@ const Profile = () => {
     return new Date(dateString).toLocaleDateString('sv-SE');
   };
 
+  // ConversationView Component for sending messages
+  const ConversationView: React.FC<{
+    conversationId: string;
+    messages: any[];
+    onMessageSent: (message: any) => void;
+  }> = ({ conversationId, messages, onMessageSent }) => {
+    const [newMessage, setNewMessage] = useState("");
+    const [isSending, setIsSending] = useState(false);
+
+    const handleSend = async () => {
+      if (!newMessage.trim()) return;
+      setIsSending(true);
+      try {
+        const res = await messagesApi.sendMessageInConversation(conversationId, newMessage.trim());
+        setNewMessage("");
+        onMessageSent(res.message);
+      } catch (err: any) {
+        toast.error(err.message || "Kunde inte skicka meddelandet");
+      } finally {
+        setIsSending(false);
+      }
+    };
+
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+          {messages.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              <p>Inga meddelanden i denna konversation än</p>
+            </div>
+          ) : (
+            messages.map((message) => (
+              <div
+                key={message.id}
+                className={`flex ${message.fromUserId === user?.id ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    message.fromUserId === user?.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-900'
+                  }`}
+                >
+                  <p className="text-sm">{message.content}</p>
+                  <p className={`text-xs mt-1 ${
+                    message.fromUserId === user?.id ? 'text-blue-200' : 'text-gray-500'
+                  }`}>
+                    {new Date(message.sentAt).toLocaleString('sv-SE', {
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="border-t p-3 bg-white">
+          <Textarea
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Skriv ett meddelande..."
+            rows={2}
+            disabled={isSending}
+          />
+          <div className="flex justify-end mt-2">
+            <Button onClick={handleSend} disabled={isSending || !newMessage.trim()}>
+              Skicka
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Show loading screen while auth is initializing
   if (authIsLoading && isOwnProfile) {
     return (
@@ -266,7 +344,6 @@ const Profile = () => {
     );
   }
 
-  // Show login prompt if not authenticated after loading is complete
   if (!isAuthenticated && isOwnProfile && !authIsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -520,39 +597,11 @@ const Profile = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-                        {messages.map((message) => (
-                          <div
-                            key={message.id}
-                            className={`flex ${message.fromUserId === user?.id ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div
-                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                                message.fromUserId === user?.id
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-gray-200 text-gray-900'
-                              }`}
-                            >
-                              <p className="text-sm">{message.content}</p>
-                              <p className={`text-xs mt-1 ${
-                                message.fromUserId === user?.id ? 'text-blue-200' : 'text-gray-500'
-                              }`}>
-                                {new Date(message.sentAt).toLocaleString('sv-SE', {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                        {messages.length === 0 && (
-                          <div className="text-center text-gray-500 py-8">
-                            <p>Inga meddelanden i denna konversation än</p>
-                          </div>
-                        )}
-                      </div>
+                      <ConversationView 
+                        conversationId={selectedConversation}
+                        messages={messages}
+                        onMessageSent={(message) => setMessages((prev) => [...prev, message])}
+                      />
                     )}
                   </CardContent>
                 </Card>
