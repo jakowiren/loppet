@@ -88,41 +88,6 @@ const Index = () => {
       </section>
       {/* Race Countdown */}
       <RaceCountdown />
-      {/* Race Categories Section */}
-      <section className="py-16 px-4 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Populära loppkategorier
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Hitta utrustning specifikt för ditt lopp
-            </p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {RACE_CATEGORIES.map((category) => {
-              const IconComponent = category.icon;
-              return (
-                <Link key={category.name} to="/annonser">
-                  <Card className="hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group border-0 overflow-hidden">
-                    <CardContent className="p-6 text-center relative">
-                      <div className={`absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-10 group-hover:opacity-20 transition-opacity`}></div>
-                      <div className="relative z-10">
-                        <div className={`inline-flex p-3 rounded-full bg-gradient-to-br ${category.gradient} mb-3`}>
-                          <IconComponent className="h-6 w-6 text-white" />
-                        </div>
-                        <h3 className="font-semibold text-gray-900 group-hover:text-gray-700 transition-colors mb-1">
-                          {category.name}
-                        </h3>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
       {/* Featured Ads Section */}
       <section className="py-16 px-4 bg-gray-50">
         <div className="max-w-6xl mx-auto">
