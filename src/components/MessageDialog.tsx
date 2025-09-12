@@ -85,6 +85,21 @@ const MessageDialog: React.FC<MessageDialogProps> = ({
             </div>
           </div>
 
+          {/* SwiftCourt suggestion */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-blue-800 mb-2">
+              💡 Vill du göra transaktionen säkrare? Skapa ett digitalt kontrakt
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.open('https://swiftcourt.com/en/contracts', '_blank')}
+              className="text-blue-600 border-blue-300"
+            >
+              Skapa kontrakt med SwiftCourt
+            </Button>
+          </div>
+
           <div className="flex gap-2 pt-2">
             <Button
               variant="outline"

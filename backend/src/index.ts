@@ -9,6 +9,7 @@ import adRoutes from './routes/ads';
 import raceRoutes from './routes/races';
 import adminRoutes from './routes/admin';
 import messageRoutes from './routes/messages';
+import uploadRoutes from './routes/upload';
 import dotenv from 'dotenv';
 import dashboardRoutes from "./routes/dashboard";
 
@@ -43,6 +44,7 @@ app.use('/api/ads', adRoutes);
 app.use('/api/races', raceRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
 // Health check endpoint

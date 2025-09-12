@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { adsApi } from "@/lib/api";
+import { adsApi, uploadApi } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -143,6 +143,15 @@ const SkapaAnnons = () => {
     setIsSubmitting(true);
     
     try {
+      let imageUrls: string[] = [];
+      
+      // Upload images first if any are selected
+      if (formData.images.length > 0) {
+        const uploadResponse = await uploadApi.uploadImages(formData.images);
+        imageUrls = uploadResponse.images.map((img: any) => img.url);
+      }
+
+      // Create ad with image URLs
       await adsApi.createAd({
         title: formData.title,
         description: formData.description,
@@ -151,13 +160,14 @@ const SkapaAnnons = () => {
         raceType: formData.raceType,
         condition: formData.condition,
         location: formData.location,
-        images: [] // TODO: Implement image upload if needed
+        images: imageUrls
       });
       
       // Navigate to ads page after successful submission
       navigate("/annonser");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating ad:", error);
+      alert(error.response?.data?.error || "Kunde inte skapa annons. Försök igen.");
     } finally {
       setIsSubmitting(false);
     }
@@ -377,7 +387,12 @@ const SkapaAnnons = () => {
               disabled={isSubmitting}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
             >
-              {isSubmitting ? "Skapar annons..." : "Skapa annons"}
+              {isSubmitting 
+                ? formData.images.length > 0 
+                  ? "Laddar upp bilder..." 
+                  : "Skapar annons..."
+                : "Skapa annons"
+              }
             </Button>
           </div>
         </form>

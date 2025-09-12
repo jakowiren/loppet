@@ -256,4 +256,26 @@ export const messagesApi = {
   }
 };
 
+// Upload API
+export const uploadApi = {
+  uploadImages: async (files: File[]) => {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('images', file);
+    });
+
+    const response = await api.post('/upload/images', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  deleteImage: async (fileName: string) => {
+    const response = await api.delete(`/upload/images/${fileName}`);
+    return response.data;
+  }
+};
+
 export default api;
