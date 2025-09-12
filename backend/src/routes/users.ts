@@ -40,7 +40,6 @@ router.get('/:username', optionalAuth, async (req: any, res) => {
             title: true,
             price: true,
             category: true,
-            raceType: true,
             condition: true,
             images: true,
             createdAt: true,

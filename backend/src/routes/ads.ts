@@ -1,5 +1,5 @@
 import express from 'express';
-import { PrismaClient, AdCategory, RaceType, AdCondition, AdStatus } from '@prisma/client';
+import { PrismaClient, AdCategory, AdCondition, AdStatus } from '@prisma/client';
 import { z } from 'zod';
 import { authenticateToken, optionalAuth } from '../middleware/auth';
 
@@ -12,7 +12,6 @@ const createAdSchema = z.object({
   description: z.string().min(1, 'Description is required').max(2000),
   price: z.number().int().positive('Price must be positive'),
   category: z.nativeEnum(AdCategory),
-  raceType: z.nativeEnum(RaceType),
   condition: z.nativeEnum(AdCondition),
   location: z.string().min(1, 'Location is required').max(100),
   images: z.array(z.string().url()).max(5, 'Maximum 5 images allowed').optional()
@@ -25,7 +24,6 @@ const updateAdSchema = createAdSchema.partial().extend({
 const searchAdsSchema = z.object({
   search: z.string().optional(),
   category: z.nativeEnum(AdCategory).optional(),
-  raceType: z.nativeEnum(RaceType).optional(),
   condition: z.nativeEnum(AdCondition).optional(),
   location: z.string().optional(),
   minPrice: z.number().positive().optional(),
@@ -42,7 +40,6 @@ router.get('/', optionalAuth, async (req: any, res) => {
     const {
       search,
       category,
-      raceType,
       condition,
       location,
       minPrice,
@@ -68,7 +65,6 @@ router.get('/', optionalAuth, async (req: any, res) => {
     }
 
     if (category) where.category = category;
-    if (raceType) where.raceType = raceType;
     if (condition) where.condition = condition;
     if (location) where.location = { contains: location, mode: 'insensitive' };
     if (minPrice || maxPrice) {
@@ -396,7 +392,6 @@ router.post('/:id/favorite', authenticateToken, async (req: any, res) => {
 router.get('/metadata/categories', (req, res) => {
   res.json({
     categories: Object.values(AdCategory),
-    raceTypes: Object.values(RaceType),
     conditions: Object.values(AdCondition)
   });
 });

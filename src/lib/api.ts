@@ -158,7 +158,6 @@ export const adsApi = {
     description: string;
     price: number;
     category: string;
-    raceType: string;
     condition: string;
     location: string;
     images: string[];

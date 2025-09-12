@@ -53,7 +53,6 @@ model Ad {
   description    String
   price          Int
   category       AdCategory
-  raceType       RaceType       @map("race_type")
   condition      AdCondition
   location       String
   status         AdStatus?      @default(ACTIVE)

@@ -64,7 +64,6 @@ interface FormData {
   description: string;
   price: string;
   category: string;
-  raceType: string;
   condition: string;
   location: string;
   images: File[];
@@ -78,7 +77,6 @@ const SkapaAnnons = () => {
     description: "",
     price: "",
     category: "",
-    raceType: "",
     condition: "",
     location: "",
     images: []
@@ -123,7 +121,6 @@ const SkapaAnnons = () => {
     if (!formData.description.trim()) newErrors.description = "Beskrivning krävs";
     if (!formData.price.trim()) newErrors.price = "Pris krävs";
     if (!formData.category) newErrors.category = "Kategori krävs";
-    if (!formData.raceType) newErrors.raceType = "Lopptype krävs";
     if (!formData.condition) newErrors.condition = "Skick krävs";
     if (!formData.location) newErrors.location = "Plats krävs";
 
@@ -157,7 +154,6 @@ const SkapaAnnons = () => {
         description: formData.description,
         price: Number(formData.price),
         category: formData.category,
-        raceType: formData.raceType,
         condition: formData.condition,
         location: formData.location,
         images: imageUrls
@@ -260,20 +256,6 @@ const SkapaAnnons = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Lopptype *</Label>
-                  <Select value={formData.raceType} onValueChange={(value) => handleInputChange("raceType", value)}>
-                    <SelectTrigger className={errors.raceType ? "border-red-500" : ""}>
-                      <SelectValue placeholder="Välj lopptype" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {RACE_TYPES.map(type => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errors.raceType && <p className="text-red-500 text-sm mt-1">{errors.raceType}</p>}
-                </div>
 
                 <div>
                   <Label>Kategori *</Label>
