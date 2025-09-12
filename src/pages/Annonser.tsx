@@ -50,6 +50,14 @@ const PRICE_RANGES = [
   "Över 20 000 kr"
 ];
 
+const BIKE_SIZES = ["48-50", "50-52", "53-55", "56-58", "59-62", "63>"];
+const BIKE_BRANDS = [
+  "Trek", "Specialized", "Cannondale", "Bianchi", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
+];
+const LOCATIONS = [
+  "Stockholm", "Göteborg", "Malmö", "Uppsala", "Linköping", "Västerås", "Örebro", "Norrköping",
+  "Helsingborg", "Jönköping", "Umeå", "Lund", "Borås", "Sundsvall", "Gävle"
+];
 
 const Annonser = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,6 +77,9 @@ const Annonser = () => {
     adTitle: '',
     sellerName: ''
   });
+  const [selectedBikeSize, setSelectedBikeSize] = useState("Alla storlekar");
+  const [selectedBikeBrand, setSelectedBikeBrand] = useState("Alla märken");
+  const [selectedLocation, setSelectedLocation] = useState("Alla orter");
 
   useEffect(() => {
     const fetchAds = async () => {
@@ -80,9 +91,12 @@ const Annonser = () => {
           category: selectedCategory !== "Alla kategorier" ? selectedCategory : undefined,
           condition: selectedCondition !== "Alla skick" ? selectedCondition : undefined,
           priceRange: selectedPriceRange !== "Alla priser" ? selectedPriceRange : undefined,
+          bikeSize: selectedCategory === "Cyklar" && selectedBikeSize !== "Alla storlekar" ? selectedBikeSize : undefined,
+          bikeBrand: selectedCategory === "Cyklar" && selectedBikeBrand !== "Alla märken" ? selectedBikeBrand : undefined,
+          location: selectedLocation !== "Alla orter" ? selectedLocation : undefined,
         });
 
-        setAds(response.ads);
+        setAds(response.data.ads);
       } catch (error) {
         console.error('Error fetching ads:', error);
         setAds([]);
@@ -92,7 +106,10 @@ const Annonser = () => {
     };
 
     fetchAds();
-  }, [searchTerm, selectedCategory, selectedCondition, selectedPriceRange]);
+  }, [
+    searchTerm, selectedCategory, selectedCondition, selectedPriceRange,
+    selectedBikeSize, selectedBikeBrand, selectedLocation
+  ]);
 
   const handleFavorite = async (id: string) => {
     try {
@@ -116,102 +133,167 @@ const Annonser = () => {
     setSelectedCondition("Alla skick");
     setSelectedPriceRange("Alla priser");
     setSearchTerm("");
+    setSelectedBikeSize("Alla storlekar");
+    setSelectedBikeBrand("Alla märken");
+    setSelectedLocation("Alla orter");
   };
 
-  const activeFiltersCount = [selectedCategory, selectedCondition, selectedPriceRange]
+  const activeFiltersCount = [selectedCategory, selectedCondition, selectedPriceRange, selectedBikeSize, selectedBikeBrand, selectedLocation]
     .filter(filter => !filter.startsWith("Alla")).length;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Annonser för svenska lopp
-          </h1>
-          <p className="text-gray-600">
-            Hitta begagnad utrustning för triathlon, Vasaloppet, Vätternrundan och andra svenska lopp
-          </p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 py-8 flex gap-8">
+        {/* Sidebar */}
+        <aside className="w-full max-w-xs hidden lg:block">
+          <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-8">
+            {selectedCategory === "Cyklar" && (
+              <>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Cykelstorlek</label>
+                  <Select value={selectedBikeSize} onValueChange={setSelectedBikeSize}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Alla storlekar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                      {BIKE_SIZES.map(size => (
+                        <SelectItem key={size} value={size}>{size}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Cykelmärke</label>
+                  <Select value={selectedBikeBrand} onValueChange={setSelectedBikeBrand}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Alla märken" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Alla märken">Alla märken</SelectItem>
+                      {BIKE_BRANDS.map(brand => (
+                        <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Ort</label>
+                  <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Alla orter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Alla orter">Alla orter</SelectItem>
+                      {LOCATIONS.map(loc => (
+                        <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+            {/* Example for clothing */}
+            {selectedCategory === "Kläder" && (
+              <>
+                {/* Add clothing size, brand, etc. */}
+              </>
+            )}
+            {/* Add similar blocks for other categories */}
+          </div>
+        </aside>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
-            <div className="lg:col-span-2 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Sök efter utrustning..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger>
-                <SelectValue placeholder="Kategori" />
-              </SelectTrigger>
-              <SelectContent>
-                {CATEGORIES.map(category => (
-                  <SelectItem key={category} value={category}>{category}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedCondition} onValueChange={setSelectedCondition}>
-              <SelectTrigger>
-                <SelectValue placeholder="Skick" />
-              </SelectTrigger>
-              <SelectContent>
-                {CONDITIONS.map(condition => (
-                  <SelectItem key={condition} value={condition}>{condition}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {/* Main content */}
+        <div className="flex-1">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Annonser för svenska lopp
+            </h1>
+            <p className="text-gray-600">
+              Hitta begagnad utrustning för triathlon, Vasaloppet, Vätternrundan och andra svenska lopp
+            </p>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-gray-500" />
-              <span className="text-sm text-gray-600">
-                {isLoading ? 'Laddar...' : filteredAds.length === 0 ? 'Inga annonser uppe' : `${filteredAds.length} annonser hittades`}
-              </span>
+          {/* Search and Filters */}
+          <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+              <div className="lg:col-span-2 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Sök efter utrustning..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map(category => (
+                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={selectedCondition} onValueChange={setSelectedCondition}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Skick" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONDITIONS.map(condition => (
+                    <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-gray-500" />
+                <span className="text-sm text-gray-600">
+                  {isLoading ? 'Laddar...' : filteredAds.length === 0 ? 'Inga annonser uppe' : `${filteredAds.length} annonser hittades`}
+                </span>
+                {activeFiltersCount > 0 && (
+                  <Badge variant="secondary">
+                    {activeFiltersCount} filter aktiva
+                  </Badge>
+                )}
+              </div>
+              
               {activeFiltersCount > 0 && (
-                <Badge variant="secondary">
-                  {activeFiltersCount} filter aktiva
-                </Badge>
+                <Button variant="outline" size="sm" onClick={clearFilters}>
+                  Rensa filter
+                </Button>
               )}
             </div>
-            
-            {activeFiltersCount > 0 && (
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                Rensa filter
-              </Button>
-            )}
           </div>
-        </div>
 
-        {/* Ad Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredAds.map(ad => (
-            <AdCard
-              key={ad.id}
-              ad={ad}
-              onFavorite={handleFavorite}
-              isFavorited={ad.isFavorited}
-            />
-          ))}
-        </div>
+          {/* Ad Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredAds.map(ad => (
+              <AdCard
+                key={ad.id}
+                ad={ad}
+                onFavorite={handleFavorite}
+                isFavorited={ad.isFavorited}
+              />
+            ))}
+          </div>
 
-        {!isLoading && filteredAds.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 mb-4">
-              <Filter className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium mb-2">Inga annonser uppe</h3>
-              <p>Bli först med att publicera din utrustning</p>
+          {!isLoading && filteredAds.length === 0 && (
+            <div className="text-center py-12">
+              <div className="text-gray-500 mb-4">
+                <Filter className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <h3 className="text-lg font-medium mb-2">Inga annonser uppe</h3>
+                <p>Bli först med att publicera din utrustning</p>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <MessageDialog

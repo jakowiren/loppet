@@ -59,6 +59,11 @@ const LOCATIONS = [
   "Gävle"
 ];
 
+const BIKE_SIZES = ["48-50", "50-52", "53-55", "56-58", "59-62", "63>"];
+const BIKE_BRANDS = [
+  "Trek", "Specialized", "Cannondale", "Bianchi", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
+];
+
 interface FormData {
   title: string;
   description: string;
@@ -67,6 +72,8 @@ interface FormData {
   condition: string;
   location: string;
   images: File[];
+  bikeSize?: string;
+  bikeBrand?: string;
 }
 
 const SkapaAnnons = () => {
@@ -79,7 +86,9 @@ const SkapaAnnons = () => {
     category: "",
     condition: "",
     location: "",
-    images: []
+    images: [],
+    bikeSize: "",
+    bikeBrand: ""
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -128,6 +137,11 @@ const SkapaAnnons = () => {
       newErrors.price = "Priset måste vara ett nummer";
     }
 
+    if (formData.category === "Cyklar") {
+      if (!formData.bikeSize) newErrors.bikeSize = "Cykelstorlek krävs";
+      if (!formData.bikeBrand) newErrors.bikeBrand = "Cykelmärke krävs";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -156,7 +170,9 @@ const SkapaAnnons = () => {
         category: formData.category,
         condition: formData.condition,
         location: formData.location,
-        images: imageUrls
+        images: imageUrls,
+        bikeSize: formData.category === "Cyklar" ? formData.bikeSize : undefined,
+        bikeBrand: formData.category === "Cyklar" ? formData.bikeBrand : undefined,
       });
       
       // Navigate to ads page after successful submission
@@ -302,6 +318,40 @@ const SkapaAnnons = () => {
                   {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                 </div>
               </div>
+
+              {/* Bike details - shown only if category is "Cyklar" */}
+              {formData.category === "Cyklar" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Cykelstorlek *</Label>
+                    <Select value={formData.bikeSize || ""} onValueChange={v => handleInputChange("bikeSize", v)}>
+                      <SelectTrigger className={errors.bikeSize ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj storlek" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BIKE_SIZES.map(size => (
+                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.bikeSize && <p className="text-red-500 text-sm mt-1">{errors.bikeSize}</p>}
+                  </div>
+                  <div>
+                    <Label>Cykelmärke *</Label>
+                    <Select value={formData.bikeBrand || ""} onValueChange={v => handleInputChange("bikeBrand", v)}>
+                      <SelectTrigger className={errors.bikeBrand ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj märke" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BIKE_BRANDS.map(brand => (
+                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.bikeBrand && <p className="text-red-500 text-sm mt-1">{errors.bikeBrand}</p>}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

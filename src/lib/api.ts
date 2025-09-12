@@ -134,19 +134,33 @@ export const userApi = {
 };
 
 // Ads API
-export const adsApi = {
-  getAds: async (params?: {
-    search?: string;
-    category?: string;
-    condition?: string;
-    priceRange?: string;
-    page?: number;
-    limit?: number;
-  }) => {
-    const response = await api.get('/ads', { params });
-    return response.data;
-  },
+export interface GetAdsParams {
+  search?: string;
+  category?: string;
+  condition?: string;
+  priceRange?: string;
+  page?: number;
+  limit?: number;
+  bikeSize?: string;
+  bikeBrand?: string;
+  clothingSize?: string;
+  clothingBrand?: string;
+  helmetSize?: string;
+  helmetBrand?: string;
+  shoeBrand?: string;
+  shoeSize?: string;
+  location?: string;
+  // Add other filter fields as needed
+}
 
+// Update the getAds function signature:
+async function getAds(params: GetAdsParams) {
+  return api.get('/ads', { params });
+}
+
+// Make sure to export the updated function and type
+export const adsApi = {
+  getAds,
   getAd: async (id: string) => {
     const response = await api.get(`/ads/${id}`);
     return response.data;
@@ -160,6 +174,14 @@ export const adsApi = {
     condition: string;
     location: string;
     images: string[];
+    bikeSize?: string;
+    bikeBrand?: string;
+    clothingSize?: string;
+    clothingBrand?: string;
+    helmetSize?: string;
+    helmetBrand?: string;
+    shoeBrand?: string;
+    shoeSize?: string;
   }) => {
     const response = await api.post('/ads', adData);
     return response.data;
