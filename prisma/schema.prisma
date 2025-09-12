@@ -53,7 +53,6 @@ model Ad {
   description    String
   price          Int
   category       AdCategory
-  raceType       RaceType       @map("race_type")
   condition      AdCondition
   location       String
   status         AdStatus?      @default(ACTIVE)
@@ -183,19 +182,6 @@ enum AdCategory {
   Annat               @map("Annat")
 
   @@map("ad_category")
-}
-
-enum RaceType {
-  Triathlon
-  Vasaloppet
-  Vätternrundan
-  Ironman
-  Cykelrace
-  Löpning
-  Simning
-  Multisport
-
-  @@map("race_type")
 }
 
 enum ActivityType {

@@ -137,7 +137,6 @@ export const userApi = {
 export const adsApi = {
   getAds: async (params?: {
     search?: string;
-    raceType?: string;
     category?: string;
     condition?: string;
     priceRange?: string;

@@ -184,19 +184,6 @@ enum AdCategory {
   @@map("ad_category")
 }
 
-enum RaceType {
-  Triathlon
-  Vasaloppet
-  Vätternrundan
-  Ironman
-  Cykelrace
-  Löpning
-  Simning
-  Multisport
-
-  @@map("race_type")
-}
-
 enum ActivityType {
   AD_CREATED
   AD_SOLD

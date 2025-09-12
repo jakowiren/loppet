@@ -53,7 +53,6 @@ const PRICE_RANGES = [
 
 const Annonser = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRaceType, setSelectedRaceType] = useState("Alla typer");
   const [selectedCategory, setSelectedCategory] = useState("Alla kategorier");
   const [selectedCondition, setSelectedCondition] = useState("Alla skick");
   const [selectedPriceRange, setSelectedPriceRange] = useState("Alla priser");
@@ -78,7 +77,6 @@ const Annonser = () => {
 
         const response = await adsApi.getAds({
           search: searchTerm || undefined,
-          raceType: selectedRaceType !== "Alla typer" ? selectedRaceType : undefined,
           category: selectedCategory !== "Alla kategorier" ? selectedCategory : undefined,
           condition: selectedCondition !== "Alla skick" ? selectedCondition : undefined,
           priceRange: selectedPriceRange !== "Alla priser" ? selectedPriceRange : undefined,
@@ -94,7 +92,7 @@ const Annonser = () => {
     };
 
     fetchAds();
-  }, [searchTerm, selectedRaceType, selectedCategory, selectedCondition, selectedPriceRange]);
+  }, [searchTerm, selectedCategory, selectedCondition, selectedPriceRange]);
 
   const handleFavorite = async (id: string) => {
     try {
@@ -114,14 +112,13 @@ const Annonser = () => {
   const filteredAds = ads;
 
   const clearFilters = () => {
-    setSelectedRaceType("Alla typer");
     setSelectedCategory("Alla kategorier");
     setSelectedCondition("Alla skick");
     setSelectedPriceRange("Alla priser");
     setSearchTerm("");
   };
 
-  const activeFiltersCount = [selectedRaceType, selectedCategory, selectedCondition, selectedPriceRange]
+  const activeFiltersCount = [selectedCategory, selectedCondition, selectedPriceRange]
     .filter(filter => !filter.startsWith("Alla")).length;
 
   return (
@@ -150,17 +147,6 @@ const Annonser = () => {
               />
             </div>
             
-            <Select value={selectedRaceType} onValueChange={setSelectedRaceType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Lopptype" />
-              </SelectTrigger>
-              <SelectContent>
-                {RACE_TYPES.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger>
                 <SelectValue placeholder="Kategori" />

@@ -11,7 +11,6 @@ interface Ad {
   location: string;
   createdAt: string;
   category: string;
-  raceType: string;
   condition: string;
   images: string[];
   description: string;
@@ -101,11 +100,6 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
               className={`h-4 w-4 ${isFavorited ? "fill-current" : ""}`}
             />
           </button>
-          <div className="absolute top-2 left-2">
-            <Badge variant="secondary" className="bg-blue-600 text-white">
-              {ad.raceType}
-            </Badge>
-          </div>
           <div className="absolute bottom-2 left-2">
             <Badge variant="outline" className="bg-white/90 text-gray-700">
               {ad.condition}

@@ -41,7 +41,6 @@ interface UserAd {
   description: string;
   price: number;
   category: string;
-  raceType: string;
   condition: string;
   status: 'ACTIVE' | 'SOLD' | 'PAUSED';
   createdAt: string;
