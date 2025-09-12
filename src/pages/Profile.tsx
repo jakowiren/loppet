@@ -8,18 +8,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Link } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Settings, 
-  Edit3, 
-  Save, 
-  X, 
-  Bell, 
-  Shield, 
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Settings,
+  Edit3,
+  Save,
+  X,
+  Bell,
+  Shield,
   Eye,
   LogOut,
   Activity,
@@ -29,7 +30,7 @@ import {
   Package,
   Clock,
   Heart,
-  MessageCircle
+  MessageCircle,
 } from "lucide-react";
 import { userApi, adsApi, messagesApi } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,7 +43,7 @@ interface UserAd {
   price: number;
   category: string;
   condition: string;
-  status: 'ACTIVE' | 'SOLD' | 'PAUSED';
+  status: "ACTIVE" | "SOLD" | "PAUSED";
   createdAt: string;
   views: number;
   favorites: number;
@@ -54,7 +55,7 @@ interface DashboardData {
   favoriteAds: UserAd[];
   recentActivity: Array<{
     id: string;
-    type: 'AD_CREATED' | 'AD_SOLD' | 'AD_FAVORITED' | 'MESSAGE_RECEIVED';
+    type: "AD_CREATED" | "AD_SOLD" | "AD_FAVORITED" | "MESSAGE_RECEIVED";
     adTitle: string;
     timestamp: string;
   }>;
@@ -69,42 +70,52 @@ interface DashboardData {
 
 const Profile = () => {
   const { username } = useParams<{ username: string }>();
-  const { user, isAuthenticated, isLoading: authIsLoading, logout, updateUser } = useAuth();
+  const { user, isAuthenticated, isLoading: authIsLoading, logout, updateUser } =
+    useAuth();
   const [activeTab, setActiveTab] = useState("aktivitet");
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [conversations, setConversations] = useState<any[]>([]);
-  const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [selectedConversation, setSelectedConversation] = useState<
+    string | null
+  >(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [editForm, setEditForm] = useState({
-    displayName: '',
-    email: '',
-    phone: '',
-    location: '',
-    bio: ''
+    displayName: "",
+    email: "",
+    phone: "",
+    location: "",
+    bio: "",
   });
+
+  // new state for public profile
+  const [profileUser, setProfileUser] = useState<any | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
 
   // Update form when user data loads
   useEffect(() => {
     if (user) {
       setEditForm({
-        displayName: user.displayName || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        location: user.location || '',
-        bio: user.bio || ''
+        displayName: user.displayName || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        location: user.location || "",
+        bio: user.bio || "",
       });
     }
   }, [user]);
 
   const isOwnProfile = !username || (user && username === user.username);
 
+  // fetch dashboard for own profile
   useEffect(() => {
     if (isOwnProfile) {
       const fetchDashboard = async () => {
@@ -122,9 +133,27 @@ const Profile = () => {
     }
   }, [isOwnProfile]);
 
+  // fetch public profile for other users
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (isOwnProfile || !username) return;
+      try {
+        setProfileLoading(true);
+        const data = await userApi.getUserProfile(username);
+        setProfileUser(data);
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+        setProfileUser(null);
+      } finally {
+        setProfileLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [username, user, isOwnProfile]);
+
   // Load conversations when messages tab is active
   useEffect(() => {
-    if (activeTab === 'meddelanden' && isOwnProfile) {
+    if (activeTab === "meddelanden" && isOwnProfile) {
       loadConversations();
     }
   }, [activeTab, isOwnProfile]);
@@ -134,7 +163,7 @@ const Profile = () => {
       const response = await messagesApi.getConversations();
       setConversations(response.conversations || []);
     } catch (error) {
-      console.error('Failed to load conversations:', error);
+      console.error("Failed to load conversations:", error);
     }
   };
 
@@ -145,7 +174,7 @@ const Profile = () => {
       setMessages(response.messages || []);
       setSelectedConversation(conversationId);
     } catch (error) {
-      console.error('Failed to load messages:', error);
+      console.error("Failed to load messages:", error);
     } finally {
       setLoadingMessages(false);
     }
@@ -155,29 +184,29 @@ const Profile = () => {
     try {
       setIsSaving(true);
       setSaveError(null);
-      
+
       const updateData = {
         displayName: editForm.displayName,
         phone: editForm.phone || undefined,
         location: editForm.location || undefined,
-        bio: editForm.bio || undefined
+        bio: editForm.bio || undefined,
       };
-      
+
       const response = await userApi.updateProfile(updateData);
-      
+
       if (response.user) {
         updateUser({
           displayName: response.user.displayName,
           phone: response.user.phone,
           location: response.user.location,
-          bio: response.user.bio
+          bio: response.user.bio,
         });
       }
-      
+
       setIsEditing(false);
     } catch (error: any) {
-      console.error('Failed to save profile:', error);
-      setSaveError(error.response?.data?.error || 'Failed to save changes');
+      console.error("Failed to save profile:", error);
+      setSaveError(error.response?.data?.error || "Failed to save changes");
     } finally {
       setIsSaving(false);
     }
@@ -189,8 +218,11 @@ const Profile = () => {
       await userApi.deleteAccount();
       logout();
     } catch (error: any) {
-      console.error('Failed to delete account:', error);
-      alert('Failed to delete account: ' + (error.response?.data?.error || 'Unknown error'));
+      console.error("Failed to delete account:", error);
+      alert(
+        "Failed to delete account: " +
+          (error.response?.data?.error || "Unknown error")
+      );
     } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
@@ -199,11 +231,11 @@ const Profile = () => {
 
   const handleCancel = () => {
     setEditForm({
-      displayName: user?.displayName || '',
-      email: user?.email || '',
-      phone: user?.phone || '',
-      location: user?.location || '',
-      bio: user?.bio || ''
+      displayName: user?.displayName || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
+      location: user?.location || "",
+      bio: user?.bio || "",
     });
     setSaveError(null);
     setIsEditing(false);
@@ -211,41 +243,53 @@ const Profile = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'SOLD': return <Package className="h-4 w-4 text-blue-500" />;
-      case 'PAUSED': return <Clock className="h-4 w-4 text-yellow-500" />;
-      default: return null;
+      case "ACTIVE":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "SOLD":
+        return <Package className="h-4 w-4 text-blue-500" />;
+      case "PAUSED":
+        return <Clock className="h-4 w-4 text-yellow-500" />;
+      default:
+        return null;
     }
   };
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return 'Aktiv';
-      case 'SOLD': return 'Såld';
-      case 'PAUSED': return 'Pausad';
-      default: return status;
+      case "ACTIVE":
+        return "Aktiv";
+      case "SOLD":
+        return "Såld";
+      case "PAUSED":
+        return "Pausad";
+      default:
+        return status;
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return 'bg-green-100 text-green-800';
-      case 'SOLD': return 'bg-blue-100 text-blue-800';
-      case 'PAUSED': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "ACTIVE":
+        return "bg-green-100 text-green-800";
+      case "SOLD":
+        return "bg-blue-100 text-blue-800";
+      case "PAUSED":
+        return "bg-yellow-100 text-yellow-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('sv-SE', {
-      style: 'currency',
-      currency: 'SEK',
+    return new Intl.NumberFormat("sv-SE", {
+      style: "currency",
+      currency: "SEK",
       minimumFractionDigits: 0,
     }).format(price);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('sv-SE');
+    return new Date(dateString).toLocaleDateString("sv-SE");
   };
 
   // ConversationView Component for sending messages
@@ -261,7 +305,10 @@ const Profile = () => {
       if (!newMessage.trim()) return;
       setIsSending(true);
       try {
-        const res = await messagesApi.sendMessageInConversation(conversationId, newMessage.trim());
+        const res = await messagesApi.sendMessageInConversation(
+          conversationId,
+          newMessage.trim()
+        );
         setNewMessage("");
         onMessageSent(res.message);
       } catch (err: any) {
@@ -282,24 +329,32 @@ const Profile = () => {
             messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.fromUserId === user?.id ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${
+                  message.fromUserId === user?.id
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
               >
                 <div
                   className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                     message.fromUserId === user?.id
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-900'
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200 text-gray-900"
                   }`}
                 >
                   <p className="text-sm">{message.content}</p>
-                  <p className={`text-xs mt-1 ${
-                    message.fromUserId === user?.id ? 'text-blue-200' : 'text-gray-500'
-                  }`}>
-                    {new Date(message.sentAt).toLocaleString('sv-SE', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
+                  <p
+                    className={`text-xs mt-1 ${
+                      message.fromUserId === user?.id
+                        ? "text-blue-200"
+                        : "text-gray-500"
+                    }`}
+                  >
+                    {new Date(message.sentAt).toLocaleString("sv-SE", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
                     })}
                   </p>
                 </div>
@@ -334,7 +389,9 @@ const Profile = () => {
           <Card>
             <CardContent className="p-8 text-center">
               <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <h2 className="text-xl font-medium text-gray-900 mb-2">Laddar profil...</h2>
+              <h2 className="text-xl font-medium text-gray-900 mb-2">
+                Laddar profil...
+              </h2>
               <p className="text-gray-600">Väntar på inloggningsdata</p>
             </CardContent>
           </Card>
@@ -350,8 +407,13 @@ const Profile = () => {
           <Card>
             <CardContent className="p-8 text-center">
               <User className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Logga in för att se din profil</h2>
-              <p className="text-gray-600">Logga in för att se och redigera din profil, kontaktinformation och inställningar.</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+                Logga in för att se din profil
+              </h2>
+              <p className="text-gray-600">
+                Logga in för att se och redigera din profil, kontaktinformation
+                och inställningar.
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -359,6 +421,79 @@ const Profile = () => {
     );
   }
 
+  // --- PUBLIC PROFILE VIEW ---
+  if (!isOwnProfile) {
+    if (profileLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <p>Laddar användarprofil...</p>
+        </div>
+      );
+    }
+
+    if (!profileUser) {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <p>Kunde inte hitta användaren.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-3xl mx-auto px-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center space-x-4 mb-4">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={profileUser.avatarUrl} />
+                  <AvatarFallback>
+                    {profileUser.displayName?.[0] ||
+                      profileUser.username?.[0] ||
+                      "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {profileUser.displayName || profileUser.username}
+                  </h1>
+                  <p className="text-gray-600">{profileUser.bio}</p>
+                  <p className="text-gray-500">{profileUser.location}</p>
+                </div>
+              </div>
+
+              <Separator className="my-4" />
+
+              <div>
+                <h2 className="text-lg font-semibold mb-2">Annonser</h2>
+                {profileUser.ads && profileUser.ads.length > 0 ? (
+                  <div className="space-y-3">
+                    {profileUser.ads.map((ad: any) => (
+                      <Link
+                        key={ad.id}
+                        to={`/annonser/${ad.id}`}
+                        className="block border p-4 rounded-lg hover:shadow-md transition"
+                      >
+                        <h3 className="font-medium">{ad.title}</h3>
+                        <p className="text-sm text-gray-600">{ad.description}</p>
+                        <p className="text-sm font-semibold text-blue-600">
+                          {formatPrice(ad.price)}
+                        </p>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500">Inga annonser ännu.</p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // --- OWN PROFILE VIEW (your original implementation) ---
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-6xl mx-auto px-4">
@@ -370,15 +505,21 @@ const Profile = () => {
                 <Avatar className="h-20 w-20">
                   <AvatarImage src="" alt={editForm.displayName} />
                   <AvatarFallback className="bg-blue-600 text-white text-xl">
-                    {editForm.displayName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    {editForm.displayName
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{editForm.displayName}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {editForm.displayName}
+                  </h1>
                   <p className="text-gray-600">{editForm.bio}</p>
                 </div>
               </div>
-              
+
               {isOwnProfile && (
                 <Button
                   onClick={logout}
