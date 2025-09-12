@@ -76,10 +76,19 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
     >
       <CardHeader className="p-0 relative">
         <div className="relative h-48 overflow-hidden rounded-t-lg bg-gray-200 flex items-center justify-center">
-          <div className="text-gray-500 text-center">
-            <div className="text-4xl mb-2">📦</div>
-            <div className="text-sm">No Image</div>
-          </div>
+          {ad.images && ad.images.length > 0 ? (
+            <img
+              src={ad.images[0]}
+              alt={ad.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+          ) : (
+            <div className="text-gray-500 text-center">
+              <div className="text-4xl mb-2">📦</div>
+              <div className="text-sm">No Image</div>
+            </div>
+          )}
           <button
             onClick={handleFavorite}
             className={`absolute top-2 right-2 p-2 rounded-full backdrop-blur-sm transition-colors ${
