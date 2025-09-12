@@ -42,12 +42,13 @@ const Index = () => {
         {/* Video background */}
         <video
           src="/background-compressed.mp4"
+          poster="/video-poster.jpg"
           autoPlay
           loop
           muted
           playsInline
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ background: "red", zIndex: 0 }}
+          style={{ backgroundColor: "#1e3a8a", zIndex: 0 }}
         />
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/40 pointer-events-none" style={{ zIndex: 1 }} />
