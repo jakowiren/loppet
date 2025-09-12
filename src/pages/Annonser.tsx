@@ -52,7 +52,7 @@ const PRICE_RANGES = [
 
 const BIKE_SIZES = ["48-50", "50-52", "53-55", "56-58", "59-62", "63>"];
 const BIKE_BRANDS = [
-  "Trek", "Specialized", "Cannondale", "Bianchi", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
+  "Trek", "Specialized", "Cannondale", "Bianchi", "Colnago", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
 ];
 const LOCATIONS = [
   "Stockholm", "Göteborg", "Malmö", "Uppsala", "Linköping", "Västerås", "Örebro", "Norrköping",
