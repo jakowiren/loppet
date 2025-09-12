@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -68,35 +67,45 @@ const Header = () => {
             <span className="text-sm text-blue-200 hidden sm:block font-medium">Svenska loppmarknaden</span>
           </div>
 
-          {/* Navigation Tabs - Updated to include all three buttons */}
-          <Tabs value={getActiveTab()} className="flex">
-            <TabsList className="bg-blue-800/50 border border-blue-600/50 backdrop-blur-sm rounded-lg p-1">
-              <Link to="/">
-                <TabsTrigger 
-                  value="home" 
-                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-yellow-400 text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all duration-200 rounded-md px-4 py-2 font-medium"
-                >
-                  Hem
-                </TabsTrigger>
-              </Link>
-              <Link to="/annonser">
-                <TabsTrigger 
-                  value="annonser" 
-                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-yellow-400 text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all duration-200 rounded-md px-4 py-2 font-medium"
-                >
-                  Annonser
-                </TabsTrigger>
-              </Link>
-              <Link to="/skapa-annons">
-                <TabsTrigger 
-                  value="skapa-annons" 
-                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-yellow-400 text-blue-200 hover:text-white hover:bg-blue-700/50 transition-all duration-200 rounded-md px-4 py-2 font-medium"
-                >
-                  Skapa annons
-                </TabsTrigger>
-              </Link>
-            </TabsList>
-          </Tabs>
+          {/* Navigation - Separated buttons for better UX */}
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button 
+                variant={getActiveTab() === 'home' ? 'default' : 'ghost'}
+                className={`transition-all duration-200 rounded-lg px-4 py-2 font-medium ${
+                  getActiveTab() === 'home' 
+                    ? 'bg-blue-600 text-yellow-400 shadow-lg' 
+                    : 'text-blue-200 hover:text-white hover:bg-blue-700/50'
+                }`}
+              >
+                Hem
+              </Button>
+            </Link>
+            <Link to="/annonser">
+              <Button 
+                variant={getActiveTab() === 'annonser' ? 'default' : 'ghost'}
+                className={`transition-all duration-200 rounded-lg px-4 py-2 font-medium ${
+                  getActiveTab() === 'annonser' 
+                    ? 'bg-blue-600 text-yellow-400 shadow-lg' 
+                    : 'text-blue-200 hover:text-white hover:bg-blue-700/50'
+                }`}
+              >
+                Annonser
+              </Button>
+            </Link>
+            <Link to="/skapa-annons">
+              <Button 
+                variant={getActiveTab() === 'skapa-annons' ? 'default' : 'ghost'}
+                className={`transition-all duration-200 rounded-lg px-4 py-2 font-medium ${
+                  getActiveTab() === 'skapa-annons' 
+                    ? 'bg-blue-600 text-yellow-400 shadow-lg' 
+                    : 'text-blue-200 hover:text-white hover:bg-blue-700/50'
+                }`}
+              >
+                Skapa annons
+              </Button>
+            </Link>
+          </div>
 
           {/* Auth Section */}
           <div className="flex items-center gap-3">

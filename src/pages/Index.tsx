@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, TrendingUp, Users, Shield, ArrowRight, Bike, Clock, MapPin, Waves, Mountain, Zap, User, Activity, Target, ChevronDown, Calendar, Users as UsersIcon } from "lucide-react";
+import { Search, TrendingUp, Users, Shield, ArrowRight, Bike, Clock, MapPin, Waves, Mountain, Zap, User, Activity, Target, ChevronDown, Calendar, Users as UsersIcon, Mail } from "lucide-react";
 import AdCard from "@/components/AdCard";
 import RaceCountdown from "@/components/RaceCountdown";
 
@@ -238,10 +238,19 @@ const Index = () => {
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">
                   Plattformen är under utveckling
                 </h3>
-                <p className="text-gray-600 text-lg leading-relaxed">
+                <p className="text-gray-600 text-lg leading-relaxed mb-6">
                   Vi bygger Sveriges första specialiserade marknad för lopputrustning. 
                   Registrera dig redan nu för att bli bland de första som får tillgång när vi lanserar.
                 </p>
+                <div className="flex items-center justify-center gap-2 text-gray-600">
+                  <span>Kontakta oss gärna med feedback!</span>
+                  <a 
+                    href="mailto:jakowiren@gmail.com" 
+                    className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 hover:bg-blue-200 transition-colors duration-200 group"
+                  >
+                    <Mail className="w-4 h-4 text-blue-600 group-hover:text-blue-700" />
+                  </a>
+                </div>
               </CardContent>
             </Card>
           </div>
