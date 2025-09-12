@@ -88,55 +88,6 @@ const Index = () => {
       </section>
       {/* Race Countdown */}
       <RaceCountdown />
-      {/* Featured Ads Section */}
-      <section className="py-16 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Utvalda annonser
-            </h2>
-            <p className="text-gray-600">
-              Högkvalitativ utrustning från verifierade säljare
-            </p>
-          </div>
-          {FEATURED_ADS.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {FEATURED_ADS.map(ad => (
-                  <AdCard key={ad.id} ad={ad} />
-                ))}
-              </div>
-              <div className="text-center mt-8 sm:hidden">
-                <Link to="/annonser">
-                  <Button variant="outline" className="flex items-center gap-2 mx-auto">
-                    Visa alla annonser
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </>
-          ) : (
-            <div className="text-center py-12">
-              <div className="max-w-md mx-auto">
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Search className="h-8 w-8 text-white" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Inga annonser att visa än
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Bli först med att publicera din utrustning på Sveriges nya loppmarknad
-                </p>
-                <Link to="/skapa-annons">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    Skapa första annonsen
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
       {/* Why Choose Us Section */}
       <section className="py-20 px-4 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
         <div className="max-w-6xl mx-auto relative z-10">
