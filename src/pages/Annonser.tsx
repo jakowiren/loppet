@@ -5,19 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, SlidersHorizontal } from "lucide-react";
+import * as SliderPrimitive from "@radix-ui/react-slider";
 import AdCard from "@/components/AdCard";
 import MessageDialog from "@/components/MessageDialog";
-
-const RACE_TYPES = [
-  "Alla typer",
-  "Triathlon",
-  "Vasaloppet",
-  "Vätternrundan", 
-  "Ironman",
-  "Cykelrace",
-  "Löpning",
-  "Simning"
-];
 
 const CATEGORIES = [
   "Alla kategorier",
@@ -40,16 +30,6 @@ const CONDITIONS = [
   "Acceptabelt"
 ];
 
-const PRICE_RANGES = [
-  "Alla priser",
-  "Under 500 kr",
-  "500 - 1 000 kr",
-  "1 000 - 5 000 kr",
-  "5 000 - 10 000 kr",
-  "10 000 - 20 000 kr",
-  "Över 20 000 kr"
-];
-
 const BIKE_SIZES = ["48-50", "50-52", "53-55", "56-58", "59-62", "63>"];
 const BIKE_BRANDS = [
   "Trek", "Specialized", "Cannondale", "Bianchi", "Colnago", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
@@ -63,7 +43,6 @@ const Annonser = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Alla kategorier");
   const [selectedCondition, setSelectedCondition] = useState("Alla skick");
-  const [selectedPriceRange, setSelectedPriceRange] = useState("Alla priser");
   const [ads, setAds] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [messageDialog, setMessageDialog] = useState<{
@@ -81,21 +60,24 @@ const Annonser = () => {
   const [selectedBikeBrand, setSelectedBikeBrand] = useState("Alla märken");
   const [selectedLocation, setSelectedLocation] = useState("Alla orter");
 
+  // Dynamic price states
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(0);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
+  const [histogram, setHistogram] = useState<number[]>([]);
+
   useEffect(() => {
     const fetchAds = async () => {
       try {
         setIsLoading(true);
-
         const response = await adsApi.getAds({
           search: searchTerm || undefined,
           category: selectedCategory !== "Alla kategorier" ? selectedCategory : undefined,
           condition: selectedCondition !== "Alla skick" ? selectedCondition : undefined,
-          priceRange: selectedPriceRange !== "Alla priser" ? selectedPriceRange : undefined,
           bikeSize: selectedCategory === "Cyklar" && selectedBikeSize !== "Alla storlekar" ? selectedBikeSize : undefined,
           bikeBrand: selectedCategory === "Cyklar" && selectedBikeBrand !== "Alla märken" ? selectedBikeBrand : undefined,
           location: selectedLocation !== "Alla orter" ? selectedLocation : undefined,
         });
-
         setAds(response.data.ads);
       } catch (error) {
         console.error('Error fetching ads:', error);
@@ -104,49 +86,123 @@ const Annonser = () => {
         setIsLoading(false);
       }
     };
-
     fetchAds();
   }, [
-    searchTerm, selectedCategory, selectedCondition, selectedPriceRange,
+    searchTerm, selectedCategory, selectedCondition,
     selectedBikeSize, selectedBikeBrand, selectedLocation
   ]);
+
+  // Update dynamic min/max price and histogram
+  useEffect(() => {
+    if (ads.length > 0) {
+      const prices = ads.map(ad => ad.price || 0);
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+      setMinPrice(min);
+      setMaxPrice(max);
+      setPriceRange([min, max]);
+
+      // Histogram with 20 bins
+      const binCount = 20;
+      const bins = new Array(binCount).fill(0);
+      const step = (max - min) / binCount || 1;
+      prices.forEach(price => {
+        const idx = Math.min(binCount - 1, Math.floor((price - min) / step));
+        bins[idx]++;
+      });
+      setHistogram(bins);
+    } else {
+      setMinPrice(0);
+      setMaxPrice(0);
+      setPriceRange([0, 0]);
+      setHistogram([]);
+    }
+  }, [ads]);
 
   const handleFavorite = async (id: string) => {
     try {
       const result = await adsApi.toggleFavorite(id);
-      
-      // Update the local state
       setAds(prevAds => prevAds.map(ad => 
-        ad.id === id 
-          ? { ...ad, isFavorited: result.isFavorited }
-          : ad
+        ad.id === id ? { ...ad, isFavorited: result.isFavorited } : ad
       ));
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
     }
   };
 
-  const filteredAds = ads;
+  // Filter ads by price range
+  const filteredAds = ads.filter(ad => {
+    if (!ad.price) return true;
+    return ad.price >= priceRange[0] && ad.price <= priceRange[1];
+  });
 
   const clearFilters = () => {
     setSelectedCategory("Alla kategorier");
     setSelectedCondition("Alla skick");
-    setSelectedPriceRange("Alla priser");
     setSearchTerm("");
     setSelectedBikeSize("Alla storlekar");
     setSelectedBikeBrand("Alla märken");
     setSelectedLocation("Alla orter");
+    setPriceRange([minPrice, maxPrice]);
   };
 
-  const activeFiltersCount = [selectedCategory, selectedCondition, selectedPriceRange, selectedBikeSize, selectedBikeBrand, selectedLocation]
-    .filter(filter => !filter.startsWith("Alla")).length;
+  const activeFiltersCount = [
+    selectedCategory, selectedCondition, selectedBikeSize, selectedBikeBrand, selectedLocation
+  ].filter(filter => !filter.startsWith("Alla")).length +
+  (priceRange[0] !== minPrice || priceRange[1] !== maxPrice ? 1 : 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8 flex gap-8">
         {/* Sidebar */}
-        <aside className="w-full max-w-xs hidden lg:block">
-          <div className="bg-white rounded-lg shadow-sm border p-6 sticky top-8">
+        <aside className="w-full max-w-xs hidden lg:block mt-[100px] -ml-[160px]">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            {/* Price filter with histogram */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-1">Pris</label>
+              {maxPrice > 0 ? (
+                <>
+                  {/* Histogram */}
+                  <div className="relative h-12 mb-2 flex items-end gap-[1px]">
+                    {histogram.map((count, i) => {
+                      const maxCount = Math.max(...histogram);
+                      const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                      return (
+                        <div
+                          key={i}
+                          className="flex-1 bg-gray-300 rounded-t"
+                          style={{ height: `${height}%` }}
+                        />
+                      );
+                    })}
+                  </div>
+
+                  {/* Slider */}
+                  <SliderPrimitive.Root
+                    className="relative flex w-full touch-none select-none items-center"
+                    min={minPrice}
+                    max={maxPrice}
+                    step={100}
+                    value={priceRange}
+                    onValueChange={(val: [number, number]) => setPriceRange(val)}
+                  >
+                    <SliderPrimitive.Track className="relative h-1 w-full grow rounded-full bg-gray-200">
+                      <SliderPrimitive.Range className="absolute h-full rounded-full bg-blue-500" />
+                    </SliderPrimitive.Track>
+                    <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
+                    <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
+                  </SliderPrimitive.Root>
+
+                  <div className="flex justify-between text-sm text-gray-600 mt-2">
+                    <span>{priceRange[0]} kr</span>
+                    <span>{priceRange[1]} kr</span>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500">Inga priser tillgängliga</p>
+              )}
+            </div>
+
             {selectedCategory === "Cyklar" && (
               <>
                 <div className="mb-4">
@@ -191,15 +247,21 @@ const Annonser = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium mb-1">Skick</label>
+                  <Select value={selectedCondition} onValueChange={setSelectedCondition}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Alla skick" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CONDITIONS.map(condition => (
+                        <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </>
             )}
-            {/* Example for clothing */}
-            {selectedCategory === "Kläder" && (
-              <>
-                {/* Add clothing size, brand, etc. */}
-              </>
-            )}
-            {/* Add similar blocks for other categories */}
           </div>
         </aside>
 
@@ -216,7 +278,7 @@ const Annonser = () => {
 
           {/* Search and Filters */}
           <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <div className="lg:col-span-2 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
@@ -235,17 +297,6 @@ const Annonser = () => {
                 <SelectContent>
                   {CATEGORIES.map(category => (
                     <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={selectedCondition} onValueChange={setSelectedCondition}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Skick" />
-                </SelectTrigger>
-                <SelectContent>
-                  {CONDITIONS.map(condition => (
-                    <SelectItem key={condition} value={condition}>{condition}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
