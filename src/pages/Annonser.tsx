@@ -60,7 +60,6 @@ const Annonser = () => {
   const [selectedBikeBrand, setSelectedBikeBrand] = useState("Alla märken");
   const [selectedLocation, setSelectedLocation] = useState("Alla orter");
 
-  // Dynamic price states
   const [minPrice, setMinPrice] = useState(0);
   const [maxPrice, setMaxPrice] = useState(0);
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
@@ -155,116 +154,117 @@ const Annonser = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8 flex gap-8">
         {/* Sidebar */}
-        <aside className="w-full max-w-xs hidden lg:block mt-[100px] -ml-[160px]">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            {/* Price filter with histogram */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium mb-1">Pris</label>
-              {maxPrice > 0 ? (
+        {selectedCategory !== "Alla kategorier" && (
+          <aside className="w-full max-w-xs hidden lg:block mt-[100px] -ml-[160px]">
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              {/* Price filter with histogram */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-1">Pris</label>
+                {maxPrice > 0 ? (
+                  <>
+                    {/* Histogram */}
+                    <div className="relative h-12 mb-2 flex items-end gap-[1px]">
+                      {histogram.map((count, i) => {
+                        const maxCount = Math.max(...histogram);
+                        const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                        return (
+                          <div
+                            key={i}
+                            className="flex-1 bg-gray-300 rounded-t"
+                            style={{ height: `${height}%` }}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {/* Slider */}
+                    <SliderPrimitive.Root
+                      className="relative flex w-full touch-none select-none items-center"
+                      min={minPrice}
+                      max={maxPrice}
+                      step={100}
+                      value={priceRange}
+                      onValueChange={(val: [number, number]) => setPriceRange(val)}
+                    >
+                      <SliderPrimitive.Track className="relative h-1 w-full grow rounded-full bg-gray-200">
+                        <SliderPrimitive.Range className="absolute h-full rounded-full bg-blue-500" />
+                      </SliderPrimitive.Track>
+                      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
+                      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
+                    </SliderPrimitive.Root>
+
+                    <div className="flex justify-between text-sm text-gray-600 mt-2">
+                      <span>{priceRange[0]} kr</span>
+                      <span>{priceRange[1]} kr</span>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-sm text-gray-500">Inga priser tillgängliga</p>
+                )}
+              </div>
+
+              {selectedCategory === "Cyklar" && (
                 <>
-                  {/* Histogram */}
-                  <div className="relative h-12 mb-2 flex items-end gap-[1px]">
-                    {histogram.map((count, i) => {
-                      const maxCount = Math.max(...histogram);
-                      const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                      return (
-                        <div
-                          key={i}
-                          className="flex-1 bg-gray-300 rounded-t"
-                          style={{ height: `${height}%` }}
-                        />
-                      );
-                    })}
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Cykelstorlek</label>
+                    <Select value={selectedBikeSize} onValueChange={setSelectedBikeSize}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Alla storlekar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                        {BIKE_SIZES.map(size => (
+                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-
-                  {/* Slider */}
-                  <SliderPrimitive.Root
-                    className="relative flex w-full touch-none select-none items-center"
-                    min={minPrice}
-                    max={maxPrice}
-                    step={100}
-                    value={priceRange}
-                    onValueChange={(val: [number, number]) => setPriceRange(val)}
-                  >
-                    <SliderPrimitive.Track className="relative h-1 w-full grow rounded-full bg-gray-200">
-                      <SliderPrimitive.Range className="absolute h-full rounded-full bg-blue-500" />
-                    </SliderPrimitive.Track>
-                    <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
-                    <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
-                  </SliderPrimitive.Root>
-
-                  <div className="flex justify-between text-sm text-gray-600 mt-2">
-                    <span>{priceRange[0]} kr</span>
-                    <span>{priceRange[1]} kr</span>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Cykelmärke</label>
+                    <Select value={selectedBikeBrand} onValueChange={setSelectedBikeBrand}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Alla märken" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Alla märken">Alla märken</SelectItem>
+                        {BIKE_BRANDS.map(brand => (
+                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Ort</label>
+                    <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Alla orter" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Alla orter">Alla orter</SelectItem>
+                        {LOCATIONS.map(loc => (
+                          <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Skick</label>
+                    <Select value={selectedCondition} onValueChange={setSelectedCondition}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Alla skick" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CONDITIONS.map(condition => (
+                          <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </>
-              ) : (
-                <p className="text-sm text-gray-500">Inga priser tillgängliga</p>
               )}
             </div>
-
-            {selectedCategory === "Cyklar" && (
-              <>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Cykelstorlek</label>
-                  <Select value={selectedBikeSize} onValueChange={setSelectedBikeSize}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Alla storlekar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                      {BIKE_SIZES.map(size => (
-                        <SelectItem key={size} value={size}>{size}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Cykelmärke</label>
-                  <Select value={selectedBikeBrand} onValueChange={setSelectedBikeBrand}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Alla märken" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Alla märken">Alla märken</SelectItem>
-                      {BIKE_BRANDS.map(brand => (
-                        <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Ort</label>
-                  <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Alla orter" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Alla orter">Alla orter</SelectItem>
-                      {LOCATIONS.map(loc => (
-                        <SelectItem key={loc} value={loc}>{loc}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1">Skick</label>
-                  <Select value={selectedCondition} onValueChange={setSelectedCondition}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Alla skick" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CONDITIONS.map(condition => (
-                        <SelectItem key={condition} value={condition}>{condition}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            )}
-          </div>
-        </aside>
-
+          </aside>
+        )}
         {/* Main content */}
         <div className="flex-1">
           <div className="mb-8">
