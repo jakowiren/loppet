@@ -6,21 +6,55 @@ import { authenticateToken, optionalAuth } from '../middleware/auth';
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Validation schemas
-const createAdSchema = z.object({
+// Base ad schema for shared fields
+const baseAdSchema = z.object({
   title: z.string().min(1, 'Title is required').max(100),
   description: z.string().min(1, 'Description is required').max(2000),
   price: z.number().int().positive('Price must be positive'),
   category: z.nativeEnum(AdCategory),
   condition: z.nativeEnum(AdCondition),
   location: z.string().min(1, 'Location is required').max(100),
-  images: z.array(z.string().url()).max(5, 'Maximum 5 images allowed').optional()
+  images: z.array(z.string().url()).max(5, 'Maximum 5 images allowed').optional(),
+  bikeSize: z.string().optional(),
+  bikeBrand: z.string().optional(),
+  clothingSize: z.string().optional(),
+  clothingBrand: z.string().optional(),
+  helmetSize: z.string().optional(),
+  helmetBrand: z.string().optional(),
+  shoeBrand: z.string().optional(),
+  shoeSize: z.string().optional(),
 });
 
-const updateAdSchema = createAdSchema.partial().extend({
+// Create ad schema
+const createAdSchema = baseAdSchema.superRefine((data, ctx) => {
+  // Cyklar
+  if (data.category === 'Cyklar') {
+    if (!data.bikeSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'bikeSize is required for bikes', path: ['bikeSize'] });
+    if (!data.bikeBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'bikeBrand is required for bikes', path: ['bikeBrand'] });
+  }
+  // Kläder
+  if (data.category === 'Kläder') {
+    if (!data.clothingSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'clothingSize is required for clothing', path: ['clothingSize'] });
+    if (!data.clothingBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'clothingBrand is required for clothing', path: ['clothingBrand'] });
+  }
+  // Hjälmar
+  if (data.category === 'Hjälmar') {
+    if (!data.helmetSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'helmetSize is required for helmets', path: ['helmetSize'] });
+    if (!data.helmetBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'helmetBrand is required for helmets', path: ['helmetBrand'] });
+  }
+  // Skor
+  if (data.category === 'Skor') {
+    if (!data.shoeBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'shoeBrand is required for shoes', path: ['shoeBrand'] });
+    if (!data.shoeSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'shoeSize is required for shoes', path: ['shoeSize'] });
+  }
+});
+
+// Update ad schema
+const updateAdSchema = baseAdSchema.partial().extend({
   status: z.nativeEnum(AdStatus).optional()
 });
 
+// Update search schema to allow filtering by new fields
 const searchAdsSchema = z.object({
   search: z.string().optional(),
   category: z.nativeEnum(AdCategory).optional(),
@@ -31,7 +65,17 @@ const searchAdsSchema = z.object({
   page: z.number().int().positive().default(1),
   limit: z.number().int().positive().max(50).default(20),
   sortBy: z.enum(['createdAt', 'price', 'views', 'favoritesCount']).default('createdAt'),
-  sortOrder: z.enum(['asc', 'desc']).default('desc')
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+
+  // New filter fields
+  bikeSize: z.string().optional(),
+  bikeBrand: z.string().optional(),
+  clothingSize: z.string().optional(),
+  clothingBrand: z.string().optional(),
+  helmetSize: z.string().optional(),
+  helmetBrand: z.string().optional(),
+  shoeBrand: z.string().optional(),
+  shoeSize: z.string().optional(),
 });
 
 // Get all active ads with search and filtering
@@ -47,7 +91,15 @@ router.get('/', optionalAuth, async (req: any, res) => {
       page,
       limit,
       sortBy,
-      sortOrder
+      sortOrder,
+      bikeSize,
+      bikeBrand,
+      clothingSize,
+      clothingBrand,
+      helmetSize,
+      helmetBrand,
+      shoeBrand,
+      shoeSize,
     } = searchAdsSchema.parse(req.query);
 
     const skip = (page - 1) * limit;
@@ -72,6 +124,14 @@ router.get('/', optionalAuth, async (req: any, res) => {
       if (minPrice) where.price.gte = minPrice;
       if (maxPrice) where.price.lte = maxPrice;
     }
+    if (bikeSize) where.bikeSize = bikeSize;
+    if (bikeBrand) where.bikeBrand = bikeBrand;
+    if (clothingSize) where.clothingSize = clothingSize;
+    if (clothingBrand) where.clothingBrand = clothingBrand;
+    if (helmetSize) where.helmetSize = helmetSize;
+    if (helmetBrand) where.helmetBrand = helmetBrand;
+    if (shoeBrand) where.shoeBrand = shoeBrand;
+    if (shoeSize) where.shoeSize = shoeSize;
 
     const [ads, totalCount] = await Promise.all([
       prisma.ad.findMany({

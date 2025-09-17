@@ -69,6 +69,14 @@ model Ad {
   seller         Profile        @relation(fields: [sellerId], references: [id], onDelete: Cascade, onUpdate: NoAction)
   conversations  Conversation[]
   favorites      Favorite[]
+  bikeSize       String?
+  bikeBrand      String?
+  clothingSize   String?
+  clothingBrand  String?
+  helmetSize     String?
+  helmetBrand    String?
+  shoeBrand      String?
+  shoeSize       String?
 
   @@map("ads")
 }
