@@ -8,6 +8,7 @@ import { Search, Filter, SlidersHorizontal } from "lucide-react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import AdCard from "@/components/AdCard";
 import MessageDialog from "@/components/MessageDialog";
+import { set } from "date-fns";
 
 const CATEGORIES = [
   "Alla kategorier",
@@ -49,13 +50,22 @@ const CLOTHING_SIZES = [
   "XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"
 ];
 const CLOTHING_BRANDS = [
-  "Castelli", "Gore Wear", "Assos", "Pearl Izumi", "Rapha", "Santini", "Endura", "Craft", "2XU", "Annat"
+  "Castelli", "Gore Wear", "Assos", "Pearl Izumi", "Rapha", "Santini", "Endura", "Craft", "2XU", "Salomon", "The North Face", "Patagonia", "Haglöfs", "Adidas", "Nike", "Puma", "Annat"
+];
+const CLOTHING_USES = [
+  "Löpning", "Cykling", "Multisport", "Annat"
+];
+const CLOTHING_TYPES = [
+  "Tröja", "Byxa", "Jacka", "Väst", "Shorts", "Tights", "Strumpor", "Handskar", "Annat"
 ];
 const SHOE_SIZES = [
   "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"
 ];
 const SHOE_BRANDS = [
-  "Sidi", "Shimano", "Giro", "Specialized", "Fizik", "Bontrager", "Pearl Izumi", "Salomon", "Asics", "Nike", "Adidas", "Annat"
+  "Sidi", "Shimano", "Giro", "Specialized", "Fizik", "Bontrager", "Pearl Izumi", "Salomon", "Asics", "Nike", "Adidas", "Brooks", "Hoka", "Saucony", "New Balance", "Mizuno", "Altra", "On Running", "Annat"
+];
+const SHOE_TYPES = [
+  "Löparskor", "Cykelskor", "Multisportskor", "Vandringsskor", "Terrängskor", "Annat"
 ];
 const HELMET_SIZES = [
   "XS", "S", "M", "L", "XL", "XXL"
@@ -96,8 +106,11 @@ const Annonser = () => {
   const [selectedLocation, setSelectedLocation] = useState("Alla orter");
   const [selectedClothingSize, setSelectedClothingSize] = useState("Alla storlekar");
   const [selectedClothingBrand, setSelectedClothingBrand] = useState("Alla märken");
+  const [selectedClothingUse, setSelectedClothingUse] = useState("Alla användningsområden");
+  const [selectedClothingType, setSelectedClothingType] = useState("Alla typer");
   const [selectedShoeSize, setSelectedShoeSize] = useState("Alla storlekar");
   const [selectedShoeBrand, setSelectedShoeBrand] = useState("Alla märken");
+  const [selectedShoeType, setSelectedShoeType] = useState("Alla typer");
   const [selectedHelmetBrand, setSelectedHelmetBrand] = useState("Alla märken");
   const [selectedHelmetSize, setSelectedHelmetSize] = useState("Alla storlekar");
   const [selectedWatchBrand, setSelectedWatchBrand] = useState("Alla märken");
@@ -122,8 +135,11 @@ const Annonser = () => {
           bikeBrand: selectedCategory === "Cyklar" && selectedBikeBrand !== "Alla märken" ? selectedBikeBrand : undefined,
           clothingSize: selectedCategory === "Kläder" && selectedClothingSize !== "Alla storlekar" ? selectedClothingSize : undefined,
           clothingBrand: selectedCategory === "Kläder" && selectedClothingBrand !== "Alla märken" ? selectedClothingBrand : undefined,
+          clothingUse: selectedCategory === "Kläder" && selectedClothingUse !== "Alla användningsområden" ? selectedClothingUse : undefined,
+          clothingType: selectedCategory === "Kläder" && selectedClothingType !== "Alla typer" ? selectedClothingType : undefined,
           shoeSize: selectedCategory === "Skor" && selectedShoeSize !== "Alla storlekar" ? selectedShoeSize : undefined,
           shoeBrand: selectedCategory === "Skor" && selectedShoeBrand !== "Alla märken" ? selectedShoeBrand : undefined,
+          shoeType: selectedCategory === "Skor" && selectedShoeType !== "Alla typer" ? selectedShoeType : undefined,
           helmetSize: selectedCategory === "Hjälmar" && selectedHelmetSize !== "Alla storlekar" ? selectedHelmetSize : undefined,
           helmetBrand: selectedCategory === "Hjälmar" && selectedHelmetBrand !== "Alla märken" ? selectedHelmetBrand : undefined,
           watchSize: selectedCategory === "Klockor" && selectedWatchSize !== "Alla storlekar" ? selectedWatchSize : undefined,
@@ -141,8 +157,8 @@ const Annonser = () => {
   }, [
     searchTerm, selectedCategory, selectedCondition,
     selectedBikeSize, selectedBikeBrand, selectedLocation, 
-    selectedClothingSize, selectedClothingBrand,
-    selectedShoeSize, selectedShoeBrand,
+    selectedClothingSize, selectedClothingBrand, selectedClothingUse, selectedClothingType,
+    selectedShoeSize, selectedShoeBrand, selectedShoeType,
     selectedHelmetSize, selectedHelmetBrand,
     selectedWatchSize, selectedWatchBrand,
   ]);
@@ -200,8 +216,11 @@ const Annonser = () => {
     setSelectedBikeBrand("Alla märken");
     setSelectedClothingSize("Alla storlekar");
     setSelectedClothingBrand("Alla märken");
+    setSelectedClothingUse("Alla användningsområden");
+    setSelectedClothingType("Alla typer");
     setSelectedShoeSize("Alla storlekar");
     setSelectedShoeBrand("Alla märken");
+    setSelectedShoeType("Alla typer");
     setSelectedHelmetSize("Alla storlekar");
     setSelectedHelmetBrand("Alla märken");
     setSelectedWatchSize("Alla storlekar");
@@ -210,8 +229,9 @@ const Annonser = () => {
   };
 
   const activeFiltersCount = [
-    selectedCategory, selectedCondition, selectedBikeSize, selectedBikeBrand, selectedLocation, selectedClothingSize, selectedClothingBrand,
-    selectedShoeSize, selectedShoeBrand, selectedHelmetSize, selectedHelmetBrand, selectedWatchSize, selectedWatchBrand
+    selectedCategory, selectedCondition, selectedBikeSize, selectedBikeBrand, selectedLocation, 
+    selectedClothingSize, selectedClothingBrand, selectedClothingUse, selectedClothingType,
+    selectedShoeSize, selectedShoeBrand, selectedShoeType, selectedHelmetSize, selectedHelmetBrand, selectedWatchSize, selectedWatchBrand
   ].filter(filter => !filter.startsWith("Alla")).length +
   (priceRange[0] !== minPrice || priceRange[1] !== maxPrice ? 1 : 0);
 
@@ -224,8 +244,11 @@ const Annonser = () => {
     setSelectedBikeBrand("Alla märken");
     setSelectedClothingSize("Alla storlekar");
     setSelectedClothingBrand("Alla märken");
+    setSelectedClothingUse("Alla användningsområden");
+    setSelectedClothingType("Alla typer");
     setSelectedShoeSize("Alla storlekar");
     setSelectedShoeBrand("Alla märken");
+    setSelectedShoeType("Alla typer");
     setSelectedHelmetSize("Alla storlekar");
     setSelectedHelmetBrand("Alla märken");
     setSelectedWatchSize("Alla storlekar");
@@ -286,19 +309,6 @@ const Annonser = () => {
                   <p className="text-sm text-gray-500">Inga priser tillgängliga</p>
                 )}
               </div>
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Skick</label>
-                <Select value={selectedCondition} onValueChange={setSelectedCondition}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Alla skick" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CONDITIONS.map(condition => (
-                      <SelectItem key={condition} value={condition}>{condition}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               {selectedCategory === "Cyklar" && (
                 <>
                   <div className="mb-4">
@@ -334,15 +344,29 @@ const Annonser = () => {
               {selectedCategory === "Kläder" && (
                 <>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Storlek</label>
-                    <Select value={selectedClothingSize} onValueChange={setSelectedClothingSize}>
+                    <label className="block text-sm font-medium mb-1">Användningsområde</label>
+                    <Select value={selectedClothingUse} onValueChange={setSelectedClothingUse}>
                       <SelectTrigger>
-                        <SelectValue placeholder="Alla storlekar" />
+                        <SelectValue placeholder="Alla användningsområden" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                        {CLOTHING_SIZES.map(size => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        <SelectItem value="Alla användningsområden">Alla användningsområden</SelectItem>
+                        {CLOTHING_USES.map(use => (
+                          <SelectItem key={use} value={use}>{use}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Typ</label>
+                    <Select value={selectedClothingType} onValueChange={setSelectedClothingType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Alla typer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Alla typer">Alla typer</SelectItem>
+                        {CLOTHING_TYPES.map(type => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -361,20 +385,34 @@ const Annonser = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                </>
-              )}
-              {selectedCategory === "Skor" && (
-                <>
                   <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Skostorlek</label>
-                    <Select value={selectedShoeSize} onValueChange={setSelectedShoeSize}>
+                    <label className="block text-sm font-medium mb-1">Storlek</label>
+                    <Select value={selectedClothingSize} onValueChange={setSelectedClothingSize}>
                       <SelectTrigger>
                         <SelectValue placeholder="Alla storlekar" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                        {SHOE_SIZES.map(size => (
+                        {CLOTHING_SIZES.map(size => (
                           <SelectItem key={size} value={size}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
+              {selectedCategory === "Skor" && (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Typ</label>
+                    <Select value={selectedShoeType} onValueChange={setSelectedShoeType}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Alla typer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Alla typer">Alla typer</SelectItem>
+                        {SHOE_TYPES.map(type => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -389,6 +427,20 @@ const Annonser = () => {
                         <SelectItem value="Alla märken">Alla märken</SelectItem>
                         {SHOE_BRANDS.map(brand => (
                           <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium mb-1">Skostorlek</label>
+                    <Select value={selectedShoeSize} onValueChange={setSelectedShoeSize}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Alla storlekar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                        {SHOE_SIZES.map(size => (
+                          <SelectItem key={size} value={size}>{size}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -459,6 +511,19 @@ const Annonser = () => {
                   </div>
                 </>
               )}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-1">Skick</label>
+                <Select value={selectedCondition} onValueChange={setSelectedCondition}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Alla skick" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CONDITIONS.map(condition => (
+                      <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </aside>
         )}
