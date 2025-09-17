@@ -138,6 +138,7 @@ export interface GetAdsParams {
   search?: string;
   category?: string;
   condition?: string;
+  location?: string;
   priceRange?: string;
   page?: number;
   limit?: number;
@@ -149,7 +150,8 @@ export interface GetAdsParams {
   helmetBrand?: string;
   shoeBrand?: string;
   shoeSize?: string;
-  location?: string;
+  watchBrand?: string;
+  watchSize?: string;
   // Add other filter fields as needed
 }
 

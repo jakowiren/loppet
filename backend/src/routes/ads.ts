@@ -23,6 +23,8 @@ const baseAdSchema = z.object({
   helmetBrand: z.string().optional(),
   shoeBrand: z.string().optional(),
   shoeSize: z.string().optional(),
+  watchBrand: z.string().optional(),
+  watchSize: z.string().optional(),
 });
 
 // Create ad schema
@@ -46,6 +48,11 @@ const createAdSchema = baseAdSchema.superRefine((data, ctx) => {
   if (data.category === 'Skor') {
     if (!data.shoeBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'shoeBrand is required for shoes', path: ['shoeBrand'] });
     if (!data.shoeSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'shoeSize is required for shoes', path: ['shoeSize'] });
+  }
+  // Klockor
+  if (data.category === 'Klockor') {
+    if (!data.watchBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'watchBrand is required for watches', path: ['watchBrand'] });
+    if (!data.watchSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'watchSize is required for watches', path: ['watchSize'] });
   }
 });
 
@@ -76,6 +83,8 @@ const searchAdsSchema = z.object({
   helmetBrand: z.string().optional(),
   shoeBrand: z.string().optional(),
   shoeSize: z.string().optional(),
+  watchBrand: z.string().optional(),
+  watchSize: z.string().optional(),
 });
 
 // Get all active ads with search and filtering
@@ -100,6 +109,8 @@ router.get('/', optionalAuth, async (req: any, res) => {
       helmetBrand,
       shoeBrand,
       shoeSize,
+      watchBrand,
+      watchSize
     } = searchAdsSchema.parse(req.query);
 
     const skip = (page - 1) * limit;
@@ -132,6 +143,8 @@ router.get('/', optionalAuth, async (req: any, res) => {
     if (helmetBrand) where.helmetBrand = helmetBrand;
     if (shoeBrand) where.shoeBrand = shoeBrand;
     if (shoeSize) where.shoeSize = shoeSize;
+    if (watchBrand) where.watchBrand = watchBrand;
+    if (watchSize) where.watchSize = watchSize;
 
     const [ads, totalCount] = await Promise.all([
       prisma.ad.findMany({
