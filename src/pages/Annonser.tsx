@@ -30,7 +30,18 @@ const CONDITIONS = [
   "Acceptabelt"
 ];
 
-const BIKE_SIZES = ["48-50", "50-52", "53-55", "56-58", "59-62", "63>"];
+const BIKE_SIZE_BUCKETS = [
+  "XXXS (<45)",
+  "XXS (45-47)",
+  "XS (48-50)",
+  "S (50-52)",
+  "M (53-55)",
+  "L (56-58)",
+  "XL (59-62)",
+  "XXL (>63)",
+  "XXXL"
+];
+const BIKE_SIZE_CODES = ["XXXS", "XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 const BIKE_BRANDS = [
   "Trek", "Specialized", "Cannondale", "Bianchi", "Colnago", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
 ];
@@ -208,16 +219,16 @@ const Annonser = () => {
                   <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Cykelstorlek</label>
                     <Select value={selectedBikeSize} onValueChange={setSelectedBikeSize}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla storlekar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                        {BIKE_SIZES.map(size => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Alla storlekar" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                      {BIKE_SIZE_CODES.map((code, idx) => (
+                        <SelectItem key={code} value={code}>{BIKE_SIZE_BUCKETS[idx]}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   </div>
                   <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Cykelmärke</label>
