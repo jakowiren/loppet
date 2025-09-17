@@ -215,25 +215,23 @@ const Annonser = () => {
   ].filter(filter => !filter.startsWith("Alla")).length +
   (priceRange[0] !== minPrice || priceRange[1] !== maxPrice ? 1 : 0);
 
-  // Add this handler for category change
+  // Update handler for category change: reset all sidebar filters to default when category changes
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
-    if (value === "Alla kategorier") {
-      // Reset all sidebar filters except location
-      setSelectedCondition("Alla skick");
-      setSelectedBikeSize("Alla storlekar");
-      setSelectedBikeBrand("Alla märken");
-      setSelectedClothingSize("Alla storlekar");
-      setSelectedClothingBrand("Alla märken");
-      setSelectedShoeSize("Alla storlekar");
-      setSelectedShoeBrand("Alla märken");
-      setSelectedHelmetSize("Alla storlekar");
-      setSelectedHelmetBrand("Alla märken");
-      setSelectedWatchSize("Alla storlekar");
-      setSelectedWatchBrand("Alla märken");
-      setPriceRange([minPrice, maxPrice]);
-      // Do NOT reset location
-    }
+    // Reset all sidebar filters to default (regardless of which category is picked)
+    setSelectedCondition("Alla skick");
+    setSelectedBikeSize("Alla storlekar");
+    setSelectedBikeBrand("Alla märken");
+    setSelectedClothingSize("Alla storlekar");
+    setSelectedClothingBrand("Alla märken");
+    setSelectedShoeSize("Alla storlekar");
+    setSelectedShoeBrand("Alla märken");
+    setSelectedHelmetSize("Alla storlekar");
+    setSelectedHelmetBrand("Alla märken");
+    setSelectedWatchSize("Alla storlekar");
+    setSelectedWatchBrand("Alla märken");
+    setPriceRange([minPrice, maxPrice]);
+    // Location is NOT reset here, stays as selected
   };
 
   return (
