@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, SlidersHorizontal } from "lucide-react";
+import { Search, Filter, SlidersHorizontal, X } from "lucide-react";
 import * as SliderPrimitive from "@radix-ui/react-slider";
 import AdCard from "@/components/AdCard";
 import MessageDialog from "@/components/MessageDialog";
@@ -115,6 +115,7 @@ const Annonser = () => {
   const [selectedHelmetSize, setSelectedHelmetSize] = useState("Alla storlekar");
   const [selectedWatchBrand, setSelectedWatchBrand] = useState("Alla märken");
   const [selectedWatchSize, setSelectedWatchSize] = useState("Alla storlekar");
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
 
   const [minPrice, setMinPrice] = useState(0);
@@ -235,6 +236,278 @@ const Annonser = () => {
   ].filter(filter => !filter.startsWith("Alla")).length +
   (priceRange[0] !== minPrice || priceRange[1] !== maxPrice ? 1 : 0);
 
+  // Sidebar content component for reuse
+  const SidebarContent = () => (
+    <>
+      {/* Price filter with histogram */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium mb-1">Pris</label>
+        {maxPrice > 0 ? (
+          <>
+            {/* Histogram */}
+            <div className="relative h-12 mb-2 flex items-end gap-[1px]">
+              {histogram.map((count, i) => {
+                const maxCount = Math.max(...histogram);
+                const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                return (
+                  <div
+                    key={i}
+                    className="flex-1 bg-gray-300 rounded-t"
+                    style={{ height: `${height}%` }}
+                  />
+                );
+              })}
+            </div>
+
+            {/* Slider */}
+            <SliderPrimitive.Root
+              className="relative flex w-full touch-none select-none items-center"
+              min={minPrice}
+              max={maxPrice}
+              step={100}
+              value={priceRange}
+              onValueChange={(val: [number, number]) => setPriceRange(val)}
+            >
+              <SliderPrimitive.Track className="relative h-1 w-full grow rounded-full bg-gray-200">
+                <SliderPrimitive.Range className="absolute h-full rounded-full bg-blue-500" />
+              </SliderPrimitive.Track>
+              <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
+              <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
+            </SliderPrimitive.Root>
+
+            <div className="flex justify-between text-sm text-gray-600 mt-2">
+              <span>{priceRange[0]} kr</span>
+              <span>{priceRange[1]} kr</span>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-gray-500">Inga priser tillgängliga</p>
+        )}
+      </div>
+
+      {selectedCategory === "Cyklar" && (
+        <>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Cykelstorlek</label>
+            <Select value={selectedBikeSize} onValueChange={setSelectedBikeSize}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla storlekar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                {BIKE_SIZE_CODES.map((code, idx) => (
+                  <SelectItem key={code} value={code}>{BIKE_SIZE_BUCKETS[idx]}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Cykelmärke</label>
+            <Select value={selectedBikeBrand} onValueChange={setSelectedBikeBrand}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla märken" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla märken">Alla märken</SelectItem>
+                {BIKE_BRANDS.map(brand => (
+                  <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      {selectedCategory === "Kläder" && (
+        <>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Användningsområde</label>
+            <Select value={selectedClothingUse} onValueChange={setSelectedClothingUse}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla användningsområden" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla användningsområden">Alla användningsområden</SelectItem>
+                {CLOTHING_USES.map(use => (
+                  <SelectItem key={use} value={use}>{use}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Typ</label>
+            <Select value={selectedClothingType} onValueChange={setSelectedClothingType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla typer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla typer">Alla typer</SelectItem>
+                {CLOTHING_TYPES.map(type => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Märke</label>
+            <Select value={selectedClothingBrand} onValueChange={setSelectedClothingBrand}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla märken" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla märken">Alla märken</SelectItem>
+                {CLOTHING_BRANDS.map(brand => (
+                  <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Storlek</label>
+            <Select value={selectedClothingSize} onValueChange={setSelectedClothingSize}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla storlekar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                {CLOTHING_SIZES.map(size => (
+                  <SelectItem key={size} value={size}>{size}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      {selectedCategory === "Skor" && (
+        <>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Typ</label>
+            <Select value={selectedShoeType} onValueChange={setSelectedShoeType}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla typer" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla typer">Alla typer</SelectItem>
+                {SHOE_TYPES.map(type => (
+                  <SelectItem key={type} value={type}>{type}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Märke</label>
+            <Select value={selectedShoeBrand} onValueChange={setSelectedShoeBrand}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla märken" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla märken">Alla märken</SelectItem>
+                {SHOE_BRANDS.map(brand => (
+                  <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Skostorlek</label>
+            <Select value={selectedShoeSize} onValueChange={setSelectedShoeSize}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla storlekar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                {SHOE_SIZES.map(size => (
+                  <SelectItem key={size} value={size}>{size}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      {selectedCategory === "Hjälmar" && (
+        <>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Storlek</label>
+            <Select value={selectedHelmetSize} onValueChange={setSelectedHelmetSize}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla storlekar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                {HELMET_SIZES.map(size => (
+                  <SelectItem key={size} value={size}>{size}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Märke</label>
+            <Select value={selectedHelmetBrand} onValueChange={setSelectedHelmetBrand}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla märken" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla märken">Alla märken</SelectItem>
+                {HELMET_BRANDS.map(brand => (
+                  <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      {selectedCategory === "Klockor" && (
+        <>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Märke</label>
+            <Select value={selectedWatchBrand} onValueChange={setSelectedWatchBrand}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla märken" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla märken">Alla märken</SelectItem>
+                {WATCH_BRANDS.map(brand => (
+                  <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Storlek</label>
+            <Select value={selectedWatchSize} onValueChange={setSelectedWatchSize}>
+              <SelectTrigger>
+                <SelectValue placeholder="Alla storlekar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
+                {WATCH_SIZES.map(size => (
+                  <SelectItem key={size} value={size}>{size}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Skick</label>
+        <Select value={selectedCondition} onValueChange={setSelectedCondition}>
+          <SelectTrigger>
+            <SelectValue placeholder="Alla skick" />
+          </SelectTrigger>
+          <SelectContent>
+            {CONDITIONS.map(condition => (
+              <SelectItem key={condition} value={condition}>{condition}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+    </>
+  );
+
   // Update handler for category change: reset all sidebar filters to default when category changes
   const handleCategoryChange = (value: string) => {
     setSelectedCategory(value);
@@ -259,276 +532,19 @@ const Annonser = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-8 flex gap-8">
-        {/* Sidebar */}
-        {selectedCategory !== "Alla kategorier" && (
-          <aside className="w-full max-w-xs hidden lg:block mt-[100px] -ml-[160px]">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              {/* Price filter with histogram */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium mb-1">Pris</label>
-                {maxPrice > 0 ? (
-                  <>
-                    {/* Histogram */}
-                    <div className="relative h-12 mb-2 flex items-end gap-[1px]">
-                      {histogram.map((count, i) => {
-                        const maxCount = Math.max(...histogram);
-                        const height = maxCount > 0 ? (count / maxCount) * 100 : 0;
-                        return (
-                          <div
-                            key={i}
-                            className="flex-1 bg-gray-300 rounded-t"
-                            style={{ height: `${height}%` }}
-                          />
-                        );
-                      })}
-                    </div>
-
-                    {/* Slider */}
-                    <SliderPrimitive.Root
-                      className="relative flex w-full touch-none select-none items-center"
-                      min={minPrice}
-                      max={maxPrice}
-                      step={100}
-                      value={priceRange}
-                      onValueChange={(val: [number, number]) => setPriceRange(val)}
-                    >
-                      <SliderPrimitive.Track className="relative h-1 w-full grow rounded-full bg-gray-200">
-                        <SliderPrimitive.Range className="absolute h-full rounded-full bg-blue-500" />
-                      </SliderPrimitive.Track>
-                      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
-                      <SliderPrimitive.Thumb className="block h-4 w-4 rounded-full bg-blue-600 shadow focus:outline-none" />
-                    </SliderPrimitive.Root>
-
-                    <div className="flex justify-between text-sm text-gray-600 mt-2">
-                      <span>{priceRange[0]} kr</span>
-                      <span>{priceRange[1]} kr</span>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-sm text-gray-500">Inga priser tillgängliga</p>
-                )}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className={`flex gap-6 ${selectedCategory !== "Alla kategorier" ? "lg:gap-8" : ""}`}>
+          {/* Desktop Sidebar */}
+          {selectedCategory !== "Alla kategorier" && (
+            <aside className="w-full max-w-xs shrink-0 hidden md:block">
+              <div className="sticky top-4 bg-white rounded-lg shadow-sm border p-6">
+                <SidebarContent />
               </div>
-              {selectedCategory === "Cyklar" && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Cykelstorlek</label>
-                    <Select value={selectedBikeSize} onValueChange={setSelectedBikeSize}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Alla storlekar" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                      {BIKE_SIZE_CODES.map((code, idx) => (
-                        <SelectItem key={code} value={code}>{BIKE_SIZE_BUCKETS[idx]}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Cykelmärke</label>
-                    <Select value={selectedBikeBrand} onValueChange={setSelectedBikeBrand}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla märken" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla märken">Alla märken</SelectItem>
-                        {BIKE_BRANDS.map(brand => (
-                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              {selectedCategory === "Kläder" && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Användningsområde</label>
-                    <Select value={selectedClothingUse} onValueChange={setSelectedClothingUse}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla användningsområden" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla användningsområden">Alla användningsområden</SelectItem>
-                        {CLOTHING_USES.map(use => (
-                          <SelectItem key={use} value={use}>{use}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Typ</label>
-                    <Select value={selectedClothingType} onValueChange={setSelectedClothingType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla typer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla typer">Alla typer</SelectItem>
-                        {CLOTHING_TYPES.map(type => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Märke</label>
-                    <Select value={selectedClothingBrand} onValueChange={setSelectedClothingBrand}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla märken" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla märken">Alla märken</SelectItem>
-                        {CLOTHING_BRANDS.map(brand => (
-                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Storlek</label>
-                    <Select value={selectedClothingSize} onValueChange={setSelectedClothingSize}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla storlekar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                        {CLOTHING_SIZES.map(size => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              {selectedCategory === "Skor" && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Typ</label>
-                    <Select value={selectedShoeType} onValueChange={setSelectedShoeType}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla typer" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla typer">Alla typer</SelectItem>
-                        {SHOE_TYPES.map(type => (
-                          <SelectItem key={type} value={type}>{type}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Märke</label>
-                    <Select value={selectedShoeBrand} onValueChange={setSelectedShoeBrand}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla märken" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla märken">Alla märken</SelectItem>
-                        {SHOE_BRANDS.map(brand => (
-                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Skostorlek</label>
-                    <Select value={selectedShoeSize} onValueChange={setSelectedShoeSize}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla storlekar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                        {SHOE_SIZES.map(size => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              {selectedCategory === "Hjälmar" && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Storlek</label>
-                    <Select value={selectedHelmetSize} onValueChange={setSelectedHelmetSize}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla storlekar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                        {HELMET_SIZES.map(size => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Märke</label>
-                    <Select value={selectedHelmetBrand} onValueChange={setSelectedHelmetBrand}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla märken" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla märken">Alla märken</SelectItem>
-                        {HELMET_BRANDS.map(brand => (
-                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              {selectedCategory === "Klockor" && (
-                <>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Märke</label>
-                    <Select value={selectedWatchBrand} onValueChange={setSelectedWatchBrand}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla märken" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla märken">Alla märken</SelectItem>
-                        {WATCH_BRANDS.map(brand => (
-                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium mb-1">Storlek</label>
-                    <Select value={selectedWatchSize} onValueChange={setSelectedWatchSize}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Alla storlekar" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Alla storlekar">Alla storlekar</SelectItem>
-                        {WATCH_SIZES.map(size => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </>
-              )}
-              <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Skick</label>
-                <Select value={selectedCondition} onValueChange={setSelectedCondition}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Alla skick" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CONDITIONS.map(condition => (
-                      <SelectItem key={condition} value={condition}>{condition}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </aside>
-        )}
-        {/* Main content */}
-        <div className="flex-1">
+            </aside>
+          )}
+
+          {/* Main content */}
+          <div className="flex-1 min-w-0">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Annonser för svenska lopp
@@ -588,17 +604,53 @@ const Annonser = () => {
                   </Badge>
                 )}
               </div>
-              
-              {activeFiltersCount > 0 && (
-                <Button variant="outline" size="sm" onClick={clearFilters}>
-                  Rensa filter
-                </Button>
-              )}
+
+              <div className="flex items-center gap-2">
+                {/* Mobile filter button */}
+                {selectedCategory !== "Alla kategorier" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowMobileFilters(!showMobileFilters)}
+                    className="md:hidden"
+                  >
+                    <Filter className="h-4 w-4 mr-1" />
+                    Filtrera
+                  </Button>
+                )}
+
+                {activeFiltersCount > 0 && (
+                  <Button variant="outline" size="sm" onClick={clearFilters}>
+                    Rensa filter
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 
+          {/* Mobile Filters */}
+          {selectedCategory !== "Alla kategorier" && showMobileFilters && (
+            <div className="md:hidden bg-white rounded-lg shadow-sm border p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-medium text-gray-900">Filter</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMobileFilters(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <SidebarContent />
+            </div>
+          )}
+
           {/* Ad Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className={`grid gap-6 ${
+            selectedCategory !== "Alla kategorier"
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          }`}>
             {filteredAds.map(ad => (
               <AdCard
                 key={ad.id}
@@ -618,6 +670,7 @@ const Annonser = () => {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
 
