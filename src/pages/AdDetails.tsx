@@ -82,8 +82,6 @@ const AdDetails = () => {
             {ad.seller.displayName || ad.seller.username}
           </Link>
         </p>
-
-        <p>Omdöme: ⭐ {ad.seller.rating}</p>
       </div>
 
       {/* Action Buttons */}
