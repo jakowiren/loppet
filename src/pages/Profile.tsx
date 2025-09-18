@@ -570,7 +570,11 @@ const Profile = () => {
                     ) : (
                       <div className="space-y-4 max-h-96 overflow-y-auto">
                         {dashboardData.userAds.map((ad) => (
-                          <div key={ad.id} className="border border-gray-200 rounded-lg p-4">
+                          <Link
+                            key={ad.id}
+                            to={`/annonser/${ad.id}`}
+                            className="block border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                          >
                             <div className="flex justify-between items-start mb-2">
                               <h3 className="font-semibold text-gray-900">{ad.title}</h3>
                               <div className="flex items-center gap-2">
@@ -592,7 +596,7 @@ const Profile = () => {
                                 </span>
                               </div>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     )}
