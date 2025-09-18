@@ -214,6 +214,19 @@ export const adsApi = {
   deleteAd: async (id: string) => {
     const response = await api.delete(`/ads/${id}`);
     return response.data;
+  },
+
+  updateAd: async (id: string, updateData: {
+    title?: string;
+    description?: string;
+    price?: number;
+    category?: string;
+    condition?: string;
+    location?: string;
+    status?: string;
+  }) => {
+    const response = await api.put(`/ads/${id}`, updateData);
+    return response.data;
   }
 };
 

@@ -32,10 +32,17 @@ import {
   Heart,
   MessageCircle,
   Trash2,
+  MoreVertical,
 } from "lucide-react";
 import { userApi, adsApi, messagesApi } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface UserAd {
   id: string;
@@ -90,6 +97,7 @@ const Profile = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
+  const [updatingAdId, setUpdatingAdId] = useState<string | null>(null);
   const [showDeleteAdConfirm, setShowDeleteAdConfirm] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     displayName: "",
@@ -265,6 +273,33 @@ const Profile = () => {
       toast.error("Kunde inte radera annons: " + (error.response?.data?.error || "Okänt fel"));
     } finally {
       setDeletingAdId(null);
+    }
+  };
+
+  const handleMarkAsSold = async (adId: string) => {
+    try {
+      setUpdatingAdId(adId);
+      await adsApi.updateAd(adId, { status: 'SOLD' });
+
+      // Update dashboard data by updating the ad status
+      setDashboardData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          userAds: prev.userAds.map(ad =>
+            ad.id === adId
+              ? { ...ad, status: 'SOLD' }
+              : ad
+          )
+        };
+      });
+
+      toast.success("Annons markerad som såld");
+    } catch (error: any) {
+      console.error("Failed to mark ad as sold:", error);
+      toast.error("Kunde inte markera annons som såld: " + (error.response?.data?.error || "Okänt fel"));
+    } finally {
+      setUpdatingAdId(null);
     }
   };
 
@@ -598,7 +633,7 @@ const Profile = () => {
                       <div className="space-y-4 max-h-96 overflow-y-auto">
                         {dashboardData.userAds.map((ad) => (
                           <div key={ad.id} className="relative border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                            <Link to={`/annonser/${ad.id}`} className="block p-4">
+                            <Link to={`/annonser/${ad.id}`} className="block p-4 pr-12">
                               <div className="flex justify-between items-start mb-2">
                                 <h3 className="font-semibold text-gray-900 flex-1 pr-4">{ad.title}</h3>
                                 <div className="flex items-center gap-2">
@@ -621,19 +656,46 @@ const Profile = () => {
                                 </div>
                               </div>
                             </Link>
-                            <Button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setShowDeleteAdConfirm(ad.id);
-                              }}
-                              variant="ghost"
-                              size="sm"
-                              className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 z-10"
-                              disabled={deletingAdId === ad.id}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute top-2 right-2 h-8 w-8 p-0 text-gray-500 hover:text-gray-700 hover:bg-gray-50 z-10"
+                                  disabled={deletingAdId === ad.id || updatingAdId === ad.id}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleMarkAsSold(ad.id);
+                                  }}
+                                  disabled={ad.status === 'SOLD'}
+                                >
+                                  <Package className="h-4 w-4 mr-2" />
+                                  Markera som såld
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowDeleteAdConfirm(ad.id);
+                                  }}
+                                  className="text-red-600 focus:text-red-600"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Ta bort annons
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </div>
                         ))}
                       </div>
