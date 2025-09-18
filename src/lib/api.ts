@@ -209,6 +209,11 @@ export const adsApi = {
   toggleFavorite: async (id: string) => {
     const response = await api.post(`/ads/${id}/favorite`);
     return response.data;
+  },
+
+  deleteAd: async (id: string) => {
+    const response = await api.delete(`/ads/${id}`);
+    return response.data;
   }
 };
 

@@ -31,6 +31,7 @@ import {
   Clock,
   Heart,
   MessageCircle,
+  Trash2,
 } from "lucide-react";
 import { userApi, adsApi, messagesApi } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
@@ -88,6 +89,8 @@ const Profile = () => {
   >(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
+  const [showDeleteAdConfirm, setShowDeleteAdConfirm] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     displayName: "",
     email: "",
@@ -239,6 +242,30 @@ const Profile = () => {
     });
     setSaveError(null);
     setIsEditing(false);
+  };
+
+  const handleDeleteAd = async (adId: string) => {
+    try {
+      setDeletingAdId(adId);
+      await adsApi.deleteAd(adId);
+
+      // Update dashboard data by removing the deleted ad
+      setDashboardData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          userAds: prev.userAds.filter(ad => ad.id !== adId)
+        };
+      });
+
+      setShowDeleteAdConfirm(null);
+      toast.success("Annons raderad");
+    } catch (error: any) {
+      console.error("Failed to delete ad:", error);
+      toast.error("Kunde inte radera annons: " + (error.response?.data?.error || "Okänt fel"));
+    } finally {
+      setDeletingAdId(null);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -570,14 +597,25 @@ const Profile = () => {
                     ) : (
                       <div className="space-y-4 max-h-96 overflow-y-auto">
                         {dashboardData.userAds.map((ad) => (
-                          <Link
-                            key={ad.id}
-                            to={`/annonser/${ad.id}`}
-                            className="block border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                          >
+                          <div key={ad.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                             <div className="flex justify-between items-start mb-2">
-                              <h3 className="font-semibold text-gray-900">{ad.title}</h3>
+                              <Link to={`/annonser/${ad.id}`} className="flex-1">
+                                <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">{ad.title}</h3>
+                              </Link>
                               <div className="flex items-center gap-2">
+                                <Button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setShowDeleteAdConfirm(ad.id);
+                                  }}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                                  disabled={deletingAdId === ad.id}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
                                 {getStatusIcon(ad.status)}
                                 <Badge className={getStatusColor(ad.status)}>
                                   {getStatusLabel(ad.status)}
@@ -596,7 +634,7 @@ const Profile = () => {
                                 </span>
                               </div>
                             </div>
-                          </Link>
+                          </div>
                         ))}
                       </div>
                     )}
@@ -923,6 +961,34 @@ const Profile = () => {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Ad Delete Confirmation Dialog */}
+        {showDeleteAdConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Ta bort annons</h3>
+              <p className="text-gray-600 mb-6">
+                Är du säker på att du vill ta bort denna annons? Detta kan inte ångras.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteAdConfirm(null)}
+                  disabled={deletingAdId !== null}
+                >
+                  Avbryt
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleDeleteAd(showDeleteAdConfirm)}
+                  disabled={deletingAdId !== null}
+                >
+                  {deletingAdId === showDeleteAdConfirm ? 'Tar bort...' : 'Ta bort annons'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
