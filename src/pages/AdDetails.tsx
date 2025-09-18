@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { adsApi } from "@/lib/api";
 import { Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -64,17 +64,17 @@ const AdDetails = () => {
     });
   };
 
-  const nextImage = () => {
+  const nextImage = useCallback(() => {
     if (ad?.images && ad.images.length > 0) {
       setCurrentImageIndex((prev) => (prev + 1) % ad.images.length);
     }
-  };
+  }, [ad?.images]);
 
-  const prevImage = () => {
+  const prevImage = useCallback(() => {
     if (ad?.images && ad.images.length > 0) {
       setCurrentImageIndex((prev) => (prev - 1 + ad.images.length) % ad.images.length);
     }
-  };
+  }, [ad?.images]);
 
   const openImageModal = (index: number) => {
     setCurrentImageIndex(index);
@@ -97,7 +97,7 @@ const AdDetails = () => {
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showImageModal]);
+  }, [showImageModal, nextImage, prevImage]);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg">
