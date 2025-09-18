@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { adsApi } from "@/lib/api";
 import { Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -64,40 +64,23 @@ const AdDetails = () => {
     });
   };
 
-  const nextImage = useCallback(() => {
+  const nextImage = () => {
     if (ad?.images && ad.images.length > 0) {
       setCurrentImageIndex((prev) => (prev + 1) % ad.images.length);
     }
-  }, [ad?.images]);
+  };
 
-  const prevImage = useCallback(() => {
+  const prevImage = () => {
     if (ad?.images && ad.images.length > 0) {
       setCurrentImageIndex((prev) => (prev - 1 + ad.images.length) % ad.images.length);
     }
-  }, [ad?.images]);
+  };
 
   const openImageModal = (index: number) => {
     setCurrentImageIndex(index);
     setShowImageModal(true);
   };
 
-  // Keyboard navigation for modal
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!showImageModal) return;
-
-      if (event.key === 'Escape') {
-        setShowImageModal(false);
-      } else if (event.key === 'ArrowLeft') {
-        prevImage();
-      } else if (event.key === 'ArrowRight') {
-        nextImage();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [showImageModal, nextImage, prevImage]);
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg">
