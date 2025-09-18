@@ -73,12 +73,15 @@ model Ad {
   bikeBrand      String?
   clothingSize   String?
   clothingBrand  String?
+  clothingUse    String?
   clothingType   String?
   helmetSize     String?
   helmetBrand    String?
   shoeBrand      String?
   shoeSize       String?
   shoeType       String?
+  watchBrand     String?
+  watchSize      String?
 
   @@map("ads")
 }
