@@ -568,8 +568,8 @@ const Profile = () => {
                         <Button>Skapa din första annons</Button>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        {dashboardData.userAds.slice(0, 3).map((ad) => (
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {dashboardData.userAds.map((ad) => (
                           <div key={ad.id} className="border border-gray-200 rounded-lg p-4">
                             <div className="flex justify-between items-start mb-2">
                               <h3 className="font-semibold text-gray-900">{ad.title}</h3>
@@ -594,48 +594,55 @@ const Profile = () => {
                             </div>
                           </div>
                         ))}
-                        {dashboardData.userAds.length > 3 && (
-                          <div className="text-center pt-4">
-                            <Button variant="outline" size="sm">
-                              Visa alla annonser ({dashboardData.userAds.length})
-                            </Button>
-                          </div>
-                        )}
                       </div>
                     )}
                   </CardContent>
                 </Card>
 
-                {/* Recent Activity */}
+                {/* Favorited Ads */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5" /> Senaste aktivitet
+                      <Heart className="h-5 w-5" /> Favoriter
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {dashboardData.recentActivity.length === 0 ? (
+                    {dashboardData.favoriteAds.length === 0 ? (
                       <div className="text-center py-8">
-                        <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600">Ingen aktivitet än</p>
+                        <Heart className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600">Inga favoriter än</p>
+                        <p className="text-sm text-gray-500">Annonser du gillar visas här</p>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        {dashboardData.recentActivity.map((activity) => (
-                          <div key={activity.id} className="flex items-start gap-3">
-                            <div className="p-2 bg-blue-100 rounded-full">
-                              <Calendar className="h-4 w-4 text-blue-600" />
+                      <div className="space-y-4 max-h-96 overflow-y-auto">
+                        {dashboardData.favoriteAds.map((ad) => (
+                          <Link
+                            key={ad.id}
+                            to={`/annonser/${ad.id}`}
+                            className="block border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                          >
+                            <div className="flex justify-between items-start mb-2">
+                              <h3 className="font-semibold text-gray-900">{ad.title}</h3>
+                              <div className="flex items-center gap-2">
+                                {getStatusIcon(ad.status)}
+                                <Badge className={getStatusColor(ad.status)}>
+                                  {getStatusLabel(ad.status)}
+                                </Badge>
+                              </div>
                             </div>
-                            <div className="flex-1">
-                              <p className="text-sm text-gray-900">
-                                {activity.type === 'AD_CREATED' && `Skapade annons "${activity.adTitle}"`}
-                                {activity.type === 'AD_SOLD' && `Sålde "${activity.adTitle}"`}
-                                {activity.type === 'AD_FAVORITED' && `Någon gillade "${activity.adTitle}"`}
-                                {activity.type === 'MESSAGE_RECEIVED' && `Fick meddelande om "${activity.adTitle}"`}
-                              </p>
-                              <p className="text-xs text-gray-500">{formatDate(activity.timestamp)}</p>
+                            <p className="text-gray-600 text-sm mb-3 line-clamp-2">{ad.description}</p>
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
+                              <div className="flex items-center gap-4 text-gray-500">
+                                <span className="flex items-center gap-1">
+                                  <Eye className="h-4 w-4" /> {ad.views}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Heart className="h-4 w-4" /> {ad.favorites}
+                                </span>
+                              </div>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                       </div>
                     )}
