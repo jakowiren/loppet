@@ -136,7 +136,7 @@ const AdCard = ({ ad, onFavorite, isFavorited = false }: AdCardProps) => {
 
           <div className="flex items-center justify-between pt-2">
             <div className="text-sm text-gray-500">
-              Säljare: {ad.seller.email}
+              Säljare: {ad.seller.displayName || ad.seller.username}
             </div>
           </div>
         </div>
