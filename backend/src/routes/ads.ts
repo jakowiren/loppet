@@ -19,10 +19,15 @@ const baseAdSchema = z.object({
   bikeBrand: z.string().optional(),
   clothingSize: z.string().optional(),
   clothingBrand: z.string().optional(),
+  clothingUse: z.string().optional(),
+  clothingType: z.string().optional(),
   helmetSize: z.string().optional(),
   helmetBrand: z.string().optional(),
   shoeBrand: z.string().optional(),
   shoeSize: z.string().optional(),
+  shoeType: z.string().optional(),
+  watchBrand: z.string().optional(),
+  watchSize: z.string().optional(),
 });
 
 // Create ad schema
@@ -36,6 +41,8 @@ const createAdSchema = baseAdSchema.superRefine((data, ctx) => {
   if (data.category === 'Kläder') {
     if (!data.clothingSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'clothingSize is required for clothing', path: ['clothingSize'] });
     if (!data.clothingBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'clothingBrand is required for clothing', path: ['clothingBrand'] });
+    if (!data.clothingUse) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'clothingUse is required for clothing', path: ['clothingUse'] });
+    if (!data.clothingType) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'clothingType is required for clothing', path: ['clothingType'] });
   }
   // Hjälmar
   if (data.category === 'Hjälmar') {
@@ -46,6 +53,12 @@ const createAdSchema = baseAdSchema.superRefine((data, ctx) => {
   if (data.category === 'Skor') {
     if (!data.shoeBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'shoeBrand is required for shoes', path: ['shoeBrand'] });
     if (!data.shoeSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'shoeSize is required for shoes', path: ['shoeSize'] });
+    if (!data.shoeType) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'shoeType is required for shoes', path: ['shoeType'] });
+  }
+  // Klockor
+  if (data.category === 'Klockor') {
+    if (!data.watchBrand) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'watchBrand is required for watches', path: ['watchBrand'] });
+    if (!data.watchSize) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'watchSize is required for watches', path: ['watchSize'] });
   }
 });
 
@@ -72,10 +85,15 @@ const searchAdsSchema = z.object({
   bikeBrand: z.string().optional(),
   clothingSize: z.string().optional(),
   clothingBrand: z.string().optional(),
+  clothingUse: z.string().optional(),
+  clothingType: z.string().optional(),
   helmetSize: z.string().optional(),
   helmetBrand: z.string().optional(),
   shoeBrand: z.string().optional(),
   shoeSize: z.string().optional(),
+  shoeType: z.string().optional(),
+  watchBrand: z.string().optional(),
+  watchSize: z.string().optional(),
 });
 
 // Get all active ads with search and filtering
@@ -96,10 +114,15 @@ router.get('/', optionalAuth, async (req: any, res) => {
       bikeBrand,
       clothingSize,
       clothingBrand,
+      clothingUse,
+      clothingType,
       helmetSize,
       helmetBrand,
       shoeBrand,
       shoeSize,
+      shoeType,
+      watchBrand,
+      watchSize
     } = searchAdsSchema.parse(req.query);
 
     const skip = (page - 1) * limit;
@@ -128,10 +151,15 @@ router.get('/', optionalAuth, async (req: any, res) => {
     if (bikeBrand) where.bikeBrand = bikeBrand;
     if (clothingSize) where.clothingSize = clothingSize;
     if (clothingBrand) where.clothingBrand = clothingBrand;
+    if (clothingUse) where.clothingUse = clothingUse;
+    if (clothingType) where.clothingType = clothingType;
     if (helmetSize) where.helmetSize = helmetSize;
     if (helmetBrand) where.helmetBrand = helmetBrand;
     if (shoeBrand) where.shoeBrand = shoeBrand;
     if (shoeSize) where.shoeSize = shoeSize;
+    if (shoeType) where.shoeType = shoeType;
+    if (watchBrand) where.watchBrand = watchBrand;
+    if (watchSize) where.watchSize = watchSize;
 
     const [ads, totalCount] = await Promise.all([
       prisma.ad.findMany({

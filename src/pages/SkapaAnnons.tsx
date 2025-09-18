@@ -11,15 +11,40 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, X, Camera, MapPin, Tag, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const RACE_TYPES = [
-  "Triathlon",
-  "Vasaloppet", 
-  "Vätternrundan",
-  "Ironman",
-  "Cykelrace",
-  "Löpning",
-  "Simning",
-  "Multisport"
+// Bike size options for dropdown (both numeric and bucket codes)
+const BIKE_SIZE_OPTIONS = [
+  { label: "42", value: "42" },
+  { label: "43", value: "43" },
+  { label: "44", value: "44" },
+  { label: "45", value: "45" },
+  { label: "46", value: "46" },
+  { label: "47", value: "47" },
+  { label: "48", value: "48" },
+  { label: "49", value: "49" },
+  { label: "50", value: "50" },
+  { label: "51", value: "51" },
+  { label: "52", value: "52" },
+  { label: "53", value: "53" },
+  { label: "54", value: "54" },
+  { label: "55", value: "55" },
+  { label: "56", value: "56" },
+  { label: "57", value: "57" },
+  { label: "58", value: "58" },
+  { label: "59", value: "59" },
+  { label: "60", value: "60" },
+  { label: "61", value: "61" },
+  { label: "62", value: "62" },
+  { label: "63", value: "63" },
+  { label: "64", value: "64" },
+  { label: "XXXS", value: "XXXS" },
+  { label: "XXS", value: "XXS" },
+  { label: "XS", value: "XS" },
+  { label: "S", value: "S" },
+  { label: "M", value: "M" },
+  { label: "L", value: "L" },
+  { label: "XL", value: "XL" },
+  { label: "XXL", value: "XXL" },
+  { label: "XXXL", value: "XXXL" }
 ];
 
 const CATEGORIES = [
@@ -59,11 +84,11 @@ const LOCATIONS = [
   "Gävle"
 ];
 
-const BIKE_SIZES = ["48-50", "50-52", "53-55", "56-58", "59-62", "63>"];
 const BIKE_BRANDS = [
   "Trek", "Specialized", "Cannondale", "Bianchi", "Colnago", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
 ];
 
+// Update FormData interface
 interface FormData {
   title: string;
   description: string;
@@ -72,7 +97,7 @@ interface FormData {
   condition: string;
   location: string;
   images: File[];
-  bikeSize?: string;
+  bikeSize?: string; // now only one field for dropdown
   bikeBrand?: string;
 }
 
@@ -138,7 +163,9 @@ const SkapaAnnons = () => {
     }
 
     if (formData.category === "Cyklar") {
-      if (!formData.bikeSize) newErrors.bikeSize = "Cykelstorlek krävs";
+      if (!formData.bikeSize) {
+        newErrors.bikeSize = "Du måste välja en cykelstorlek";
+      }
       if (!formData.bikeBrand) newErrors.bikeBrand = "Cykelmärke krävs";
     }
 
@@ -146,21 +173,44 @@ const SkapaAnnons = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Helper to map selected value to bucket code for filtering
+  function getBikeSizeBucket(selected: string) {
+    if (["XXXS", "XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"].includes(selected)) {
+      return selected;
+    }
+    const num = Number(selected);
+    if (!isNaN(num)) {
+      if (num < 45) return "XXXS";
+      if (num >= 45 && num <= 47) return "XXS";
+      if (num >= 48 && num <= 50) return "XS";
+      if (num >= 51 && num <= 52) return "S";
+      if (num >= 53 && num <= 55) return "M";
+      if (num >= 56 && num <= 58) return "L";
+      if (num >= 59 && num <= 62) return "XL";
+      if (num >= 63 && num <= 64) return "XXL";
+      if (num > 64) return "XXXL";
+    }
+    return undefined;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
-    
+
     try {
       let imageUrls: string[] = [];
-      
+
       // Upload images first if any are selected
       if (formData.images.length > 0) {
         const uploadResponse = await uploadApi.uploadImages(formData.images);
         imageUrls = uploadResponse.images.map((img: any) => img.url);
       }
+
+      // Always send the bucket code for filtering
+      const bikeSizeBucket = formData.category === "Cyklar" ? getBikeSizeBucket(formData.bikeSize || "") : undefined;
 
       // Create ad with image URLs
       await adsApi.createAd({
@@ -171,10 +221,10 @@ const SkapaAnnons = () => {
         condition: formData.condition,
         location: formData.location,
         images: imageUrls,
-        bikeSize: formData.category === "Cyklar" ? formData.bikeSize : undefined,
+        bikeSize: bikeSizeBucket,
         bikeBrand: formData.category === "Cyklar" ? formData.bikeBrand : undefined,
       });
-      
+
       // Navigate to ads page after successful submission
       navigate("/annonser");
     } catch (error: any) {
@@ -324,17 +374,22 @@ const SkapaAnnons = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>Cykelstorlek *</Label>
-                    <Select value={formData.bikeSize || ""} onValueChange={v => handleInputChange("bikeSize", v)}>
+                    <Select
+                      value={formData.bikeSize || ""}
+                      onValueChange={v => handleInputChange("bikeSize", v)}
+                    >
                       <SelectTrigger className={errors.bikeSize ? "border-red-500" : ""}>
-                        <SelectValue placeholder="Välj storlek" />
+                        <SelectValue placeholder="Välj cykelstorlek" />
                       </SelectTrigger>
                       <SelectContent>
-                        {BIKE_SIZES.map(size => (
-                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        {BIKE_SIZE_OPTIONS.map(opt => (
+                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.bikeSize && <p className="text-red-500 text-sm mt-1">{errors.bikeSize}</p>}
+                    {errors.bikeSize && (
+                      <p className="text-red-500 text-sm mt-1">{errors.bikeSize}</p>
+                    )}
                   </div>
                   <div>
                     <Label>Cykelmärke *</Label>

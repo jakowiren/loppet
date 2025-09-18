@@ -138,6 +138,7 @@ export interface GetAdsParams {
   search?: string;
   category?: string;
   condition?: string;
+  location?: string;
   priceRange?: string;
   page?: number;
   limit?: number;
@@ -145,11 +146,15 @@ export interface GetAdsParams {
   bikeBrand?: string;
   clothingSize?: string;
   clothingBrand?: string;
+  clothingUse?: string;
+  clothingType?: string;
   helmetSize?: string;
   helmetBrand?: string;
   shoeBrand?: string;
   shoeSize?: string;
-  location?: string;
+  shoeType?: string;
+  watchBrand?: string;
+  watchSize?: string;
   // Add other filter fields as needed
 }
 
@@ -178,10 +183,13 @@ export const adsApi = {
     bikeBrand?: string;
     clothingSize?: string;
     clothingBrand?: string;
+    clothingUse?: string;
+    clothingType?: string;
     helmetSize?: string;
     helmetBrand?: string;
     shoeBrand?: string;
     shoeSize?: string;
+    shoeType?: string;
   }) => {
     const response = await api.post('/ads', adData);
     return response.data;
