@@ -88,6 +88,50 @@ const BIKE_BRANDS = [
   "Trek", "Specialized", "Cannondale", "Bianchi", "Colnago", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
 ];
 
+const CLOTHING_SIZES = [
+  "XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"
+];
+
+const CLOTHING_BRANDS = [
+  "Castelli", "Gore Wear", "Assos", "Pearl Izumi", "Rapha", "Santini", "Endura", "Craft", "2XU", "Salomon", "The North Face", "Patagonia", "Haglöfs", "Adidas", "Nike", "Puma", "Annat"
+];
+
+const CLOTHING_USES = [
+  "Löpning", "Cykling", "Multisport", "Annat"
+];
+
+const CLOTHING_TYPES = [
+  "Tröja", "Byxa", "Jacka", "Väst", "Shorts", "Tights", "Strumpor", "Handskar", "Annat"
+];
+
+const SHOE_SIZES = [
+  "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"
+];
+
+const SHOE_BRANDS = [
+  "Sidi", "Shimano", "Giro", "Specialized", "Fizik", "Bontrager", "Pearl Izumi", "Salomon", "Asics", "Nike", "Adidas", "Brooks", "Hoka", "Saucony", "New Balance", "Mizuno", "Altra", "On Running", "Annat"
+];
+
+const SHOE_TYPES = [
+  "Löparskor", "Cykelskor", "Multisportskor", "Vandringsskor", "Terrängskor", "Annat"
+];
+
+const HELMET_SIZES = [
+  "XS", "S", "M", "L", "XL", "XXL"
+];
+
+const HELMET_BRANDS = [
+  "Giro", "Bell", "Specialized", "Kask", "POC", "Bontrager", "Lazer", "Scott", "ABUS", "Annat"
+];
+
+const WATCH_BRANDS = [
+  "Garmin", "Wahoo", "Polar", "Suunto", "Coros", "Apple", "Fitbit", "Samsung", "Annat"
+];
+
+const WATCH_SIZES = [
+  "Small", "Medium", "Large"
+];
+
 // Update FormData interface
 interface FormData {
   title: string;
@@ -97,8 +141,24 @@ interface FormData {
   condition: string;
   location: string;
   images: File[];
-  bikeSize?: string; // now only one field for dropdown
+  // Bike fields
+  bikeSize?: string;
   bikeBrand?: string;
+  // Clothing fields
+  clothingSize?: string;
+  clothingBrand?: string;
+  clothingUse?: string;
+  clothingType?: string;
+  // Shoe fields
+  shoeSize?: string;
+  shoeBrand?: string;
+  shoeType?: string;
+  // Helmet fields
+  helmetSize?: string;
+  helmetBrand?: string;
+  // Watch fields
+  watchBrand?: string;
+  watchSize?: string;
 }
 
 const SkapaAnnons = () => {
@@ -112,8 +172,24 @@ const SkapaAnnons = () => {
     condition: "",
     location: "",
     images: [],
+    // Bike fields
     bikeSize: "",
-    bikeBrand: ""
+    bikeBrand: "",
+    // Clothing fields
+    clothingSize: "",
+    clothingBrand: "",
+    clothingUse: "",
+    clothingType: "",
+    // Shoe fields
+    shoeSize: "",
+    shoeBrand: "",
+    shoeType: "",
+    // Helmet fields
+    helmetSize: "",
+    helmetBrand: "",
+    // Watch fields
+    watchBrand: "",
+    watchSize: ""
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -162,11 +238,33 @@ const SkapaAnnons = () => {
       newErrors.price = "Priset måste vara ett nummer";
     }
 
+    // Category-specific validations
     if (formData.category === "Cyklar") {
-      if (!formData.bikeSize) {
-        newErrors.bikeSize = "Du måste välja en cykelstorlek";
-      }
+      if (!formData.bikeSize) newErrors.bikeSize = "Cykelstorlek krävs";
       if (!formData.bikeBrand) newErrors.bikeBrand = "Cykelmärke krävs";
+    }
+
+    if (formData.category === "Kläder") {
+      if (!formData.clothingSize) newErrors.clothingSize = "Klädstorlek krävs";
+      if (!formData.clothingBrand) newErrors.clothingBrand = "Klädmärke krävs";
+      if (!formData.clothingUse) newErrors.clothingUse = "Användningsområde krävs";
+      if (!formData.clothingType) newErrors.clothingType = "Klädtyp krävs";
+    }
+
+    if (formData.category === "Skor") {
+      if (!formData.shoeSize) newErrors.shoeSize = "Skostorlek krävs";
+      if (!formData.shoeBrand) newErrors.shoeBrand = "Skomärke krävs";
+      if (!formData.shoeType) newErrors.shoeType = "Skotyp krävs";
+    }
+
+    if (formData.category === "Hjälmar") {
+      if (!formData.helmetSize) newErrors.helmetSize = "Hjälmstorlek krävs";
+      if (!formData.helmetBrand) newErrors.helmetBrand = "Hjälmmärke krävs";
+    }
+
+    if (formData.category === "Klockor") {
+      if (!formData.watchBrand) newErrors.watchBrand = "Klockmärke krävs";
+      if (!formData.watchSize) newErrors.watchSize = "Klockstorlek krävs";
     }
 
     setErrors(newErrors);
@@ -212,7 +310,7 @@ const SkapaAnnons = () => {
       // Always send the bucket code for filtering
       const bikeSizeBucket = formData.category === "Cyklar" ? getBikeSizeBucket(formData.bikeSize || "") : undefined;
 
-      // Create ad with image URLs
+      // Create ad with image URLs and category-specific fields
       await adsApi.createAd({
         title: formData.title,
         description: formData.description,
@@ -221,8 +319,24 @@ const SkapaAnnons = () => {
         condition: formData.condition,
         location: formData.location,
         images: imageUrls,
+        // Bike fields
         bikeSize: bikeSizeBucket,
         bikeBrand: formData.category === "Cyklar" ? formData.bikeBrand : undefined,
+        // Clothing fields
+        clothingSize: formData.category === "Kläder" ? formData.clothingSize : undefined,
+        clothingBrand: formData.category === "Kläder" ? formData.clothingBrand : undefined,
+        clothingUse: formData.category === "Kläder" ? formData.clothingUse : undefined,
+        clothingType: formData.category === "Kläder" ? formData.clothingType : undefined,
+        // Shoe fields
+        shoeSize: formData.category === "Skor" ? formData.shoeSize : undefined,
+        shoeBrand: formData.category === "Skor" ? formData.shoeBrand : undefined,
+        shoeType: formData.category === "Skor" ? formData.shoeType : undefined,
+        // Helmet fields
+        helmetSize: formData.category === "Hjälmar" ? formData.helmetSize : undefined,
+        helmetBrand: formData.category === "Hjälmar" ? formData.helmetBrand : undefined,
+        // Watch fields
+        watchBrand: formData.category === "Klockor" ? formData.watchBrand : undefined,
+        watchSize: formData.category === "Klockor" ? formData.watchSize : undefined,
       });
 
       // Navigate to ads page after successful submission
@@ -369,6 +483,8 @@ const SkapaAnnons = () => {
                 </div>
               </div>
 
+              {/* Category-specific fields */}
+
               {/* Bike details - shown only if category is "Cyklar" */}
               {formData.category === "Cyklar" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -404,6 +520,184 @@ const SkapaAnnons = () => {
                       </SelectContent>
                     </Select>
                     {errors.bikeBrand && <p className="text-red-500 text-sm mt-1">{errors.bikeBrand}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Clothing details - shown only if category is "Kläder" */}
+              {formData.category === "Kläder" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Användningsområde *</Label>
+                    <Select value={formData.clothingUse || ""} onValueChange={v => handleInputChange("clothingUse", v)}>
+                      <SelectTrigger className={errors.clothingUse ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj användningsområde" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CLOTHING_USES.map(use => (
+                          <SelectItem key={use} value={use}>{use}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.clothingUse && <p className="text-red-500 text-sm mt-1">{errors.clothingUse}</p>}
+                  </div>
+                  <div>
+                    <Label>Typ *</Label>
+                    <Select value={formData.clothingType || ""} onValueChange={v => handleInputChange("clothingType", v)}>
+                      <SelectTrigger className={errors.clothingType ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj typ" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CLOTHING_TYPES.map(type => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.clothingType && <p className="text-red-500 text-sm mt-1">{errors.clothingType}</p>}
+                  </div>
+                  <div>
+                    <Label>Märke *</Label>
+                    <Select value={formData.clothingBrand || ""} onValueChange={v => handleInputChange("clothingBrand", v)}>
+                      <SelectTrigger className={errors.clothingBrand ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj märke" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CLOTHING_BRANDS.map(brand => (
+                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.clothingBrand && <p className="text-red-500 text-sm mt-1">{errors.clothingBrand}</p>}
+                  </div>
+                  <div>
+                    <Label>Storlek *</Label>
+                    <Select value={formData.clothingSize || ""} onValueChange={v => handleInputChange("clothingSize", v)}>
+                      <SelectTrigger className={errors.clothingSize ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj storlek" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {CLOTHING_SIZES.map(size => (
+                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.clothingSize && <p className="text-red-500 text-sm mt-1">{errors.clothingSize}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Shoe details - shown only if category is "Skor" */}
+              {formData.category === "Skor" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Typ *</Label>
+                    <Select value={formData.shoeType || ""} onValueChange={v => handleInputChange("shoeType", v)}>
+                      <SelectTrigger className={errors.shoeType ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj typ" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SHOE_TYPES.map(type => (
+                          <SelectItem key={type} value={type}>{type}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.shoeType && <p className="text-red-500 text-sm mt-1">{errors.shoeType}</p>}
+                  </div>
+                  <div>
+                    <Label>Märke *</Label>
+                    <Select value={formData.shoeBrand || ""} onValueChange={v => handleInputChange("shoeBrand", v)}>
+                      <SelectTrigger className={errors.shoeBrand ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj märke" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SHOE_BRANDS.map(brand => (
+                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.shoeBrand && <p className="text-red-500 text-sm mt-1">{errors.shoeBrand}</p>}
+                  </div>
+                  <div>
+                    <Label>Storlek *</Label>
+                    <Select value={formData.shoeSize || ""} onValueChange={v => handleInputChange("shoeSize", v)}>
+                      <SelectTrigger className={errors.shoeSize ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj storlek" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {SHOE_SIZES.map(size => (
+                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.shoeSize && <p className="text-red-500 text-sm mt-1">{errors.shoeSize}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Helmet details - shown only if category is "Hjälmar" */}
+              {formData.category === "Hjälmar" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Storlek *</Label>
+                    <Select value={formData.helmetSize || ""} onValueChange={v => handleInputChange("helmetSize", v)}>
+                      <SelectTrigger className={errors.helmetSize ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj storlek" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {HELMET_SIZES.map(size => (
+                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.helmetSize && <p className="text-red-500 text-sm mt-1">{errors.helmetSize}</p>}
+                  </div>
+                  <div>
+                    <Label>Märke *</Label>
+                    <Select value={formData.helmetBrand || ""} onValueChange={v => handleInputChange("helmetBrand", v)}>
+                      <SelectTrigger className={errors.helmetBrand ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj märke" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {HELMET_BRANDS.map(brand => (
+                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.helmetBrand && <p className="text-red-500 text-sm mt-1">{errors.helmetBrand}</p>}
+                  </div>
+                </div>
+              )}
+
+              {/* Watch details - shown only if category is "Klockor" */}
+              {formData.category === "Klockor" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Märke *</Label>
+                    <Select value={formData.watchBrand || ""} onValueChange={v => handleInputChange("watchBrand", v)}>
+                      <SelectTrigger className={errors.watchBrand ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj märke" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {WATCH_BRANDS.map(brand => (
+                          <SelectItem key={brand} value={brand}>{brand}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.watchBrand && <p className="text-red-500 text-sm mt-1">{errors.watchBrand}</p>}
+                  </div>
+                  <div>
+                    <Label>Storlek *</Label>
+                    <Select value={formData.watchSize || ""} onValueChange={v => handleInputChange("watchSize", v)}>
+                      <SelectTrigger className={errors.watchSize ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Välj storlek" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {WATCH_SIZES.map(size => (
+                          <SelectItem key={size} value={size}>{size}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {errors.watchSize && <p className="text-red-500 text-sm mt-1">{errors.watchSize}</p>}
                   </div>
                 </div>
               )}

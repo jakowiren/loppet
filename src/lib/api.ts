@@ -190,6 +190,8 @@ export const adsApi = {
     shoeBrand?: string;
     shoeSize?: string;
     shoeType?: string;
+    watchBrand?: string;
+    watchSize?: string;
   }) => {
     const response = await api.post('/ads', adData);
     return response.data;
