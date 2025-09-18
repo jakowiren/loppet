@@ -5,9 +5,11 @@ import { adsApi } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MessageDialog from "@/components/MessageDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 const AdDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const { user } = useAuth();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["ad", id],
@@ -47,6 +49,9 @@ const AdDetails = () => {
 
   const ad = data;
 
+  // Check if current user is the owner of the ad
+  const isOwner = user && user.id === ad.seller.id;
+
   const handleContactSeller = () => {
     setMessageDialog({
       open: true,
@@ -85,14 +90,16 @@ const AdDetails = () => {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-4">
-        <Button
-          onClick={handleContactSeller}
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-lg py-6"
-        >
-          Kontakta säljaren
-        </Button>
-      </div>
+      {!isOwner && (
+        <div className="flex gap-4">
+          <Button
+            onClick={handleContactSeller}
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-lg py-6"
+          >
+            Kontakta säljaren
+          </Button>
+        </div>
+      )}
 
       {/* Contact Seller Dialog */}
       <MessageDialog
