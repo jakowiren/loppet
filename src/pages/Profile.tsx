@@ -597,43 +597,43 @@ const Profile = () => {
                     ) : (
                       <div className="space-y-4 max-h-96 overflow-y-auto">
                         {dashboardData.userAds.map((ad) => (
-                          <div key={ad.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex justify-between items-start mb-2">
-                              <Link to={`/annonser/${ad.id}`} className="flex-1">
-                                <h3 className="font-semibold text-gray-900 hover:text-blue-600 transition-colors">{ad.title}</h3>
-                              </Link>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setShowDeleteAdConfirm(ad.id);
-                                  }}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                  disabled={deletingAdId === ad.id}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                                {getStatusIcon(ad.status)}
-                                <Badge className={getStatusColor(ad.status)}>
-                                  {getStatusLabel(ad.status)}
-                                </Badge>
+                          <div key={ad.id} className="relative border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                            <Link to={`/annonser/${ad.id}`} className="block p-4">
+                              <div className="flex justify-between items-start mb-2">
+                                <h3 className="font-semibold text-gray-900 flex-1 pr-4">{ad.title}</h3>
+                                <div className="flex items-center gap-2">
+                                  {getStatusIcon(ad.status)}
+                                  <Badge className={getStatusColor(ad.status)}>
+                                    {getStatusLabel(ad.status)}
+                                  </Badge>
+                                </div>
                               </div>
-                            </div>
-                            <p className="text-gray-600 text-sm mb-3">{ad.description}</p>
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
-                              <div className="flex items-center gap-4 text-gray-500">
-                                <span className="flex items-center gap-1">
-                                  <Eye className="h-4 w-4" /> {ad.views}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Heart className="h-4 w-4" /> {ad.favorites}
-                                </span>
+                              <p className="text-gray-600 text-sm mb-3">{ad.description}</p>
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
+                                <div className="flex items-center gap-4 text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <Eye className="h-4 w-4" /> {ad.views}
+                                  </span>
+                                  <span className="flex items-center gap-1">
+                                    <Heart className="h-4 w-4" /> {ad.favorites}
+                                  </span>
+                                </div>
                               </div>
-                            </div>
+                            </Link>
+                            <Button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setShowDeleteAdConfirm(ad.id);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-2 right-2 h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50 z-10"
+                              disabled={deletingAdId === ad.id}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         ))}
                       </div>
