@@ -17,7 +17,6 @@ model Profile {
   phone               String?
   location            String?
   bio                 String?
-  rating              Decimal?       @default(0.0) @db.Decimal(3, 2)
   totalSales          Int?           @default(0) @map("total_sales")
   totalEarnings       Int?           @default(0) @map("total_earnings")
   createdAt           DateTime?      @default(now()) @map("created_at") @db.Timestamptz(6)
