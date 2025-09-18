@@ -85,7 +85,6 @@ router.post('/google', async (req, res) => {
         phone: profile.phone,
         location: profile.location,
         bio: profile.bio,
-        rating: profile.rating,
         totalSales: profile.totalSales,
         totalEarnings: profile.totalEarnings,
         createdAt: profile.createdAt
@@ -118,7 +117,6 @@ router.get('/me', authenticateToken, async (req: any, res) => {
         phone: true,
         location: true,
         bio: true,
-        rating: true,
         totalSales: true,
         totalEarnings: true,
         createdAt: true
@@ -150,7 +148,6 @@ router.post('/verify', authenticateToken, async (req: any, res) => {
         phone: true,
         location: true,
         bio: true,
-        rating: true,
         totalSales: true,
         totalEarnings: true,
         createdAt: true

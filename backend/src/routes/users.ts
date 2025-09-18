@@ -30,7 +30,6 @@ router.get('/:username', optionalAuth, async (req: any, res) => {
         avatarUrl: true,
         location: true,
         bio: true,
-        rating: true,
         totalSales: true,
         createdAt: true,
         ads: {
@@ -106,7 +105,6 @@ router.put('/profile', authenticateToken, async (req: any, res) => {
         phone: true,
         location: true,
         bio: true,
-        rating: true,
         totalSales: true,
         totalEarnings: true,
         createdAt: true,
@@ -139,8 +137,7 @@ router.get('/dashboard/stats', authenticateToken, async (req: any, res) => {
           username: true,
           displayName: true,
           avatarUrl: true,
-          rating: true,
-          totalSales: true,
+            totalSales: true,
           totalEarnings: true
         }
       }),

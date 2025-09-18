@@ -101,8 +101,7 @@ router.get('/ads', authenticateToken, isAdmin, async (req, res) => {
             select: {
               username: true,
               displayName: true,
-              email: true,
-              rating: true
+              email: true
             }
           }
         }
