@@ -233,6 +233,7 @@ const SkapaAnnons = () => {
     if (!formData.category) newErrors.category = "Kategori krävs";
     if (!formData.condition) newErrors.condition = "Skick krävs";
     if (!formData.location) newErrors.location = "Plats krävs";
+    if (formData.images.length === 0) newErrors.images = "Minst en bild krävs";
 
     if (formData.price && isNaN(Number(formData.price))) {
       newErrors.price = "Priset måste vara ett nummer";
@@ -709,7 +710,7 @@ const SkapaAnnons = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="h-5 w-5" />
-                Bilder (max 5)
+                Bilder (min 1, max 5) *
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -749,6 +750,7 @@ const SkapaAnnons = () => {
                 <p className="text-sm text-gray-600">
                   Ladda upp bilder på din utrustning. Första bilden blir huvudbild.
                 </p>
+                {errors.images && <p className="text-red-500 text-sm mt-1">{errors.images}</p>}
               </div>
             </CardContent>
           </Card>
