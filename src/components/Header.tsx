@@ -53,9 +53,9 @@ const Header = () => {
   };
 
   return (
-    <header className="w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 backdrop-blur-md border-b border-blue-700/30 sticky top-0 z-50 shadow-lg">
-      <div className="max-w-6xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
+    <header className="w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 backdrop-blur-md border-b border-blue-700/30 sticky top-0 z-50 shadow-lg h-20">
+      <div className="max-w-6xl mx-auto px-4 h-full">
+        <div className="flex items-center justify-between h-full">
           {/* Logo/Brand */}
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center gap-3 group">
