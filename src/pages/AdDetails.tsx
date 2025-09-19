@@ -1,15 +1,19 @@
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { adsApi } from "@/lib/api";
-import { Loader2, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, X, Edit, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import MessageDialog from "@/components/MessageDialog";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const AdDetails = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["ad", id],
@@ -31,6 +35,14 @@ const AdDetails = () => {
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    price: 0,
+    location: "",
+  });
 
   if (isLoading) {
     return (
@@ -54,6 +66,16 @@ const AdDetails = () => {
 
   // Check if current user is the owner of the ad
   const isOwner = user && user.id === ad.seller.id;
+
+  // Initialize edit form when ad data loads
+  if (ad && !editForm.title) {
+    setEditForm({
+      title: ad.title,
+      description: ad.description,
+      price: ad.price,
+      location: ad.location,
+    });
+  }
 
   const handleContactSeller = () => {
     setMessageDialog({
@@ -81,10 +103,72 @@ const AdDetails = () => {
     setShowImageModal(true);
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setEditForm({
+      title: ad.title,
+      description: ad.description,
+      price: ad.price,
+      location: ad.location,
+    });
+  };
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      await adsApi.updateAd(ad.id, editForm);
+
+      // Update the query cache
+      queryClient.invalidateQueries({ queryKey: ["ad", id] });
+
+      setIsEditing(false);
+      toast.success("Annons uppdaterad!");
+    } catch (error: any) {
+      toast.error("Kunde inte uppdatera annons: " + (error.response?.data?.error || "Okänt fel"));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg">
-      <h1 className="text-2xl font-bold mb-4">{ad.title}</h1>
+      <div className="flex justify-between items-start mb-4">
+        {isEditing ? (
+          <Input
+            value={editForm.title}
+            onChange={(e) => setEditForm({...editForm, title: e.target.value})}
+            className="text-2xl font-bold flex-1 mr-4"
+            placeholder="Annons titel"
+          />
+        ) : (
+          <h1 className="text-2xl font-bold">{ad.title}</h1>
+        )}
+
+        {isOwner && !isEditing && (
+          <Button onClick={handleEdit} variant="outline" className="ml-4">
+            <Edit className="h-4 w-4 mr-2" />
+            Redigera
+          </Button>
+        )}
+
+        {isOwner && isEditing && (
+          <div className="flex gap-2 ml-4">
+            <Button onClick={handleSave} disabled={isSaving}>
+              <Save className="h-4 w-4 mr-2" />
+              {isSaving ? "Sparar..." : "Spara"}
+            </Button>
+            <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
+              <X className="h-4 w-4 mr-2" />
+              Avbryt
+            </Button>
+          </div>
+        )}
+      </div>
 
       {/* Image Gallery */}
       <div className="mb-6">
@@ -144,13 +228,51 @@ const AdDetails = () => {
           </div>
         )}
       </div>
-      <p className="text-lg font-semibold text-blue-600 mb-2">
-        {ad.price} kr
-      </p>
-      <p className="mb-4">{ad.description}</p>
+      {isEditing ? (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Pris (kr)</label>
+          <Input
+            type="number"
+            value={editForm.price}
+            onChange={(e) => setEditForm({...editForm, price: Number(e.target.value)})}
+            className="w-32 mb-4"
+            placeholder="Pris"
+          />
+        </div>
+      ) : (
+        <p className="text-lg font-semibold text-blue-600 mb-2">
+          {ad.price} kr
+        </p>
+      )}
+
+      {isEditing ? (
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Beskrivning</label>
+          <Textarea
+            value={editForm.description}
+            onChange={(e) => setEditForm({...editForm, description: e.target.value})}
+            rows={4}
+            placeholder="Beskrivning av produkten"
+          />
+        </div>
+      ) : (
+        <p className="mb-4">{ad.description}</p>
+      )}
 
       <div className="text-sm text-gray-600 mb-6 space-y-1">
-        <p>Plats: {ad.location}</p>
+        {isEditing ? (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Plats</label>
+            <Input
+              value={editForm.location}
+              onChange={(e) => setEditForm({...editForm, location: e.target.value})}
+              placeholder="Ort eller region"
+              className="mb-2"
+            />
+          </div>
+        ) : (
+          <p>Plats: {ad.location}</p>
+        )}
 
         {/* Seller Link */}
         <p>
