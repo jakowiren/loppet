@@ -11,7 +11,6 @@ import Profile from "./pages/Profile";
 import Annonser from "./pages/Annonser";
 import SkapaAnnons from "./pages/SkapaAnnons";
 import LoginToCreateAd from "./pages/LoginToCreateAd";
-import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Footer from "@/components/Footer";
 import OmOss from "./pages/OmOss";
@@ -40,11 +39,6 @@ const App = () => (
                 <Route path="/annonser" element={<Annonser />} />
                 <Route path="/skapa-annons" element={<SkapaAnnons />} />
                 <Route path="/login-to-create" element={<LoginToCreateAd />} />
-                <Route path="/dashboard" element={
-                  <AuthGuard>
-                    <Dashboard />
-                  </AuthGuard>
-                } />
                 <Route path="/om-oss" element={<OmOss />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/annonser/:id" element={<AdDetails />} />

@@ -87,9 +87,9 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ className = '' }) => {
       login(result.token, result.user);
       toast.success('Successfully signed in!');
       
-      // Redirect to intended destination or dashboard
-      const redirectTo = searchParams.get('redirect') || 
-                        (location.pathname === '/login-to-create' ? '/skapa-annons' : '/dashboard');
+      // Redirect to intended destination or profile
+      const redirectTo = searchParams.get('redirect') ||
+                        (location.pathname === '/login-to-create' ? '/skapa-annons' : '/profile');
       navigate(redirectTo);
     } catch (error: any) {
       console.error('Google auth error:', error);
