@@ -30,7 +30,7 @@ const LoppetLogo = () => (
 
 const Header = () => {
   const location = useLocation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
 
   const getActiveTab = () => {
     if (location.pathname.startsWith('/profile')) return 'profile';
@@ -107,9 +107,12 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* Auth Section */}
-          <div className="flex items-center gap-3">
-            {isAuthenticated && user ? (
+          {/* Auth Section - Fixed width container to prevent layout shift */}
+          <div className="flex items-center gap-3 w-32 justify-end">
+            {isLoading ? (
+              /* Loading skeleton */
+              <div className="h-10 w-20 rounded-md bg-blue-700/30 border border-blue-600/30 animate-pulse"></div>
+            ) : isAuthenticated && user ? (
               <>
                 {/* User Profile - Direct Link */}
                 <Link to={`/profile/${user.username}`}>
