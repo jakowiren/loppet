@@ -17,6 +17,7 @@ import Footer from "@/components/Footer";
 import OmOss from "./pages/OmOss";
 import FAQ from "./pages/FAQ";
 import AdDetails from "./pages/AdDetails";
+import ScrollToTop from "./components/ScrollToTop";
 
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToTop />
           <div className="flex flex-col min-h-screen">
             <div className="min-h-screen bg-gray-50">
               <Header />
