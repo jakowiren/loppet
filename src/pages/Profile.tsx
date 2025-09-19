@@ -91,6 +91,7 @@ const Profile = () => {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [conversations, setConversations] = useState<any[]>([]);
+  const [loadingConversations, setLoadingConversations] = useState(false);
   const [selectedConversation, setSelectedConversation] = useState<
     string | null
   >(null);
@@ -171,10 +172,13 @@ const Profile = () => {
 
   const loadConversations = async () => {
     try {
+      setLoadingConversations(true);
       const response = await messagesApi.getConversations();
       setConversations(response.conversations || []);
     } catch (error) {
       console.error("Failed to load conversations:", error);
+    } finally {
+      setLoadingConversations(false);
     }
   };
 
@@ -772,7 +776,12 @@ const Profile = () => {
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="max-h-[500px] overflow-y-auto">
-                      {conversations.length === 0 ? (
+                      {loadingConversations ? (
+                        <div className="p-4 text-center text-gray-500">
+                          <Clock className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-600" />
+                          <p>Laddar meddelanden...</p>
+                        </div>
+                      ) : conversations.length === 0 ? (
                         <div className="p-4 text-center text-gray-500">
                           <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                           <p>Inga meddelanden än</p>
