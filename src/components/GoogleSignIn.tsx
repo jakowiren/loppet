@@ -108,12 +108,6 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ className = '' }) => {
         className={`inline-block ${className}`}
       />
 
-      {isLoading && (
-        <div className="flex items-center justify-center mt-2">
-          <Loader2 className="h-4 w-4 animate-spin text-green-400 mr-2" />
-          <span className="text-gray-400 text-sm">Signing in...</span>
-        </div>
-      )}
 
     </>
   );

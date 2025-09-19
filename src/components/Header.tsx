@@ -127,10 +127,8 @@ const Header = () => {
                 </Link>
               </>
             ) : (
-              /* Sign In Button for unauthenticated users - improved styling */
-              <div className="bg-blue-800/50 border border-blue-600/50 backdrop-blur-sm rounded-lg p-1">
-                <GoogleSignIn className="[&>div]:rounded-md [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0 [&>div]:hover:bg-blue-700/50 [&>div]:transition-all [&>div]:duration-200" />
-              </div>
+              /* Sign In Button for unauthenticated users */
+              <GoogleSignIn className="[&>div]:rounded-md [&>div]:border-0 [&>div]:bg-transparent [&>div]:p-0 [&>div]:hover:bg-blue-700/50 [&>div]:transition-all [&>div]:duration-200" />
             )}
           </div>
         </div>
