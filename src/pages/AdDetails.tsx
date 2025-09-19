@@ -6,9 +6,64 @@ import { Loader2, ChevronLeft, ChevronRight, X, Edit, Save } from "lucide-react"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import MessageDialog from "@/components/MessageDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+
+const CATEGORIES = [
+  { label: "Cyklar", value: "Cyklar" },
+  { label: "Kläder", value: "Kläder" },
+  { label: "Skor", value: "Skor" },
+  { label: "Tillbehör", value: "Tillbehör" },
+  { label: "Klockor", value: "Klockor" },
+  { label: "Hjälmar", value: "Hjälmar" },
+  { label: "Nutrition", value: "Nutrition" },
+  { label: "Annat", value: "Annat" }
+];
+
+const CONDITIONS = [
+  { label: "Nytt", value: "NYTT" },
+  { label: "Som nytt", value: "SOM_NYTT" },
+  { label: "Mycket bra", value: "MYCKET_BRA" },
+  { label: "Bra", value: "BRA" },
+  { label: "Acceptabelt", value: "ACCEPTABELT" }
+];
+
+const BIKE_SIZE_OPTIONS = [
+  { label: "42", value: "42" }, { label: "43", value: "43" }, { label: "44", value: "44" },
+  { label: "45", value: "45" }, { label: "46", value: "46" }, { label: "47", value: "47" },
+  { label: "48", value: "48" }, { label: "49", value: "49" }, { label: "50", value: "50" },
+  { label: "51", value: "51" }, { label: "52", value: "52" }, { label: "53", value: "53" },
+  { label: "54", value: "54" }, { label: "55", value: "55" }, { label: "56", value: "56" },
+  { label: "57", value: "57" }, { label: "58", value: "58" }, { label: "59", value: "59" },
+  { label: "60", value: "60" }, { label: "61", value: "61" }, { label: "62", value: "62" },
+  { label: "63", value: "63" }, { label: "64", value: "64" },
+  { label: "XXXS", value: "XXXS" }, { label: "XXS", value: "XXS" }, { label: "XS", value: "XS" },
+  { label: "S", value: "S" }, { label: "M", value: "M" }, { label: "L", value: "L" },
+  { label: "XL", value: "XL" }, { label: "XXL", value: "XXL" }, { label: "XXXL", value: "XXXL" }
+];
+
+const BIKE_BRANDS = [
+  "Trek", "Specialized", "Cannondale", "Bianchi", "Colnago", "Cervélo", "Scott", "Giant", "Cube", "Orbea", "Annat"
+];
+
+const SHOE_SIZES = [
+  "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "50"
+];
+
+const SHOE_BRANDS = [
+  "Sidi", "Shimano", "Giro", "Specialized", "Fizik", "Bontrager", "Pearl Izumi", "Salomon", "Asics", "Nike", "Adidas", "Brooks", "Hoka", "Saucony", "New Balance", "Mizuno", "Altra", "On Running", "Annat"
+];
+
+const CLOTHING_SIZES = [
+  "XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"
+];
+
+const CLOTHING_BRANDS = [
+  "Castelli", "Gore Wear", "Assos", "Pearl Izumi", "Rapha", "Santini", "Endura", "Craft", "2XU", "Salomon", "The North Face", "Patagonia", "Haglöfs", "Adidas", "Nike", "Puma", "Annat"
+];
 
 const AdDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -42,6 +97,15 @@ const AdDetails = () => {
     description: "",
     price: 0,
     location: "",
+    category: "",
+    condition: "",
+    // Category-specific fields
+    bikeSize: "",
+    bikeBrand: "",
+    shoeSize: "",
+    shoeBrand: "",
+    clothingSize: "",
+    clothingBrand: "",
   });
 
   if (isLoading) {
@@ -74,6 +138,15 @@ const AdDetails = () => {
       description: ad.description,
       price: ad.price,
       location: ad.location,
+      category: ad.category || "",
+      condition: ad.condition || "",
+      // Category-specific fields
+      bikeSize: ad.bikeSize || "",
+      bikeBrand: ad.bikeBrand || "",
+      shoeSize: ad.shoeSize || "",
+      shoeBrand: ad.shoeBrand || "",
+      clothingSize: ad.clothingSize || "",
+      clothingBrand: ad.clothingBrand || "",
     });
   }
 
@@ -114,6 +187,15 @@ const AdDetails = () => {
       description: ad.description,
       price: ad.price,
       location: ad.location,
+      category: ad.category || "",
+      condition: ad.condition || "",
+      // Category-specific fields
+      bikeSize: ad.bikeSize || "",
+      bikeBrand: ad.bikeBrand || "",
+      shoeSize: ad.shoeSize || "",
+      shoeBrand: ad.shoeBrand || "",
+      clothingSize: ad.clothingSize || "",
+      clothingBrand: ad.clothingBrand || "",
     });
   };
 
@@ -272,6 +354,197 @@ const AdDetails = () => {
           </div>
         ) : (
           <p>Plats: {ad.location}</p>
+        )}
+
+        {/* Metadata Display */}
+        {isEditing ? (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
+              <Select value={editForm.category} onValueChange={(value) => setEditForm({...editForm, category: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Välj kategori" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CATEGORIES.map((category) => (
+                    <SelectItem key={category.value} value={category.value}>
+                      {category.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Skick</label>
+              <Select value={editForm.condition} onValueChange={(value) => setEditForm({...editForm, condition: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Välj skick" />
+                </SelectTrigger>
+                <SelectContent>
+                  {CONDITIONS.map((condition) => (
+                    <SelectItem key={condition.value} value={condition.value}>
+                      {condition.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        ) : (
+          <div className="flex gap-2 flex-wrap mb-2">
+            {ad.category && (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                {CATEGORIES.find(c => c.value === ad.category)?.label || ad.category}
+              </Badge>
+            )}
+            {ad.condition && (
+              <Badge variant="secondary" className="bg-green-100 text-green-800">
+                {CONDITIONS.find(c => c.value === ad.condition)?.label || ad.condition}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Category-specific fields display */}
+        {!isEditing && (
+          <div className="text-sm text-gray-600 space-y-1">
+            {/* Bike-specific fields */}
+            {ad.category === "Cyklar" && (
+              <>
+                {ad.bikeSize && <p>Cykelstorlek: {ad.bikeSize}</p>}
+                {ad.bikeBrand && <p>Cykelmärke: {ad.bikeBrand}</p>}
+              </>
+            )}
+
+            {/* Shoe-specific fields */}
+            {ad.category === "Skor" && (
+              <>
+                {ad.shoeSize && <p>Skostorlek: {ad.shoeSize}</p>}
+                {ad.shoeBrand && <p>Skomärke: {ad.shoeBrand}</p>}
+              </>
+            )}
+
+            {/* Clothing-specific fields */}
+            {ad.category === "Kläder" && (
+              <>
+                {ad.clothingSize && <p>Klädstorlek: {ad.clothingSize}</p>}
+                {ad.clothingBrand && <p>Klädmärke: {ad.clothingBrand}</p>}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Category-specific fields editing */}
+        {isEditing && (
+          <div className="space-y-3 mt-4">
+            {/* Bike-specific fields */}
+            {editForm.category === "Cyklar" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cykelstorlek</label>
+                  <Select value={editForm.bikeSize} onValueChange={(value) => setEditForm({...editForm, bikeSize: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj cykelstorlek" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BIKE_SIZE_OPTIONS.map((size) => (
+                        <SelectItem key={size.value} value={size.value}>
+                          {size.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Cykelmärke</label>
+                  <Select value={editForm.bikeBrand} onValueChange={(value) => setEditForm({...editForm, bikeBrand: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj cykelmärke" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {BIKE_BRANDS.map((brand) => (
+                        <SelectItem key={brand} value={brand}>
+                          {brand}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {/* Shoe-specific fields */}
+            {editForm.category === "Skor" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Skostorlek</label>
+                  <Select value={editForm.shoeSize} onValueChange={(value) => setEditForm({...editForm, shoeSize: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj skostorlek" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SHOE_SIZES.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Skomärke</label>
+                  <Select value={editForm.shoeBrand} onValueChange={(value) => setEditForm({...editForm, shoeBrand: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj skomärke" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SHOE_BRANDS.map((brand) => (
+                        <SelectItem key={brand} value={brand}>
+                          {brand}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+
+            {/* Clothing-specific fields */}
+            {editForm.category === "Kläder" && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Klädstorlek</label>
+                  <Select value={editForm.clothingSize} onValueChange={(value) => setEditForm({...editForm, clothingSize: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj klädstorlek" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLOTHING_SIZES.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Klädmärke</label>
+                  <Select value={editForm.clothingBrand} onValueChange={(value) => setEditForm({...editForm, clothingBrand: value})}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Välj klädmärke" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CLOTHING_BRANDS.map((brand) => (
+                        <SelectItem key={brand} value={brand}>
+                          {brand}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            )}
+          </div>
         )}
 
         {/* Seller Link */}
