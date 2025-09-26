@@ -29,7 +29,7 @@ const App = () => (
         <BrowserRouter>
           <ScrollToTop />
           <div className="flex flex-col min-h-screen">
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen">
               <Header />
               <Routes>
                 <Route path="/" element={<Index />} />
