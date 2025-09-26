@@ -11,7 +11,6 @@ interface User {
   phone?: string;
   location?: string;
   bio?: string;
-  skills: string[];
   createdAt: string;
 }
 

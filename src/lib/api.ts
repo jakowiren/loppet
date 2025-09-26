@@ -38,7 +38,6 @@ api.interceptors.response.use(
 export const authApi = {
   googleLogin: async (token: string, userData?: {
     username?: string;
-    skills?: string[];
   }) => {
     const response = await api.post('/auth/google', {
       token,
@@ -68,7 +67,6 @@ export const userApi = {
 
   updateProfile: async (profileData: {
     displayName?: string;
-    skills?: string[];
   }) => {
     const response = await api.put('/users/profile', profileData);
     return response.data;
