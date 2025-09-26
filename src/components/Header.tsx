@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import GoogleSignIn from "./GoogleSignIn";
-import { LogOut, User, LayoutDashboard, Plus, Activity } from "lucide-react";
+import { getUserInitials } from "@/lib/utils";
 
 // Custom Logo Component
 const LoppetLogo = () => (
@@ -43,14 +43,6 @@ const Header = () => {
     logout();
   };
 
-  const getUserInitials = (displayName: string) => {
-    return displayName
-      .split(' ')
-      .map(name => name[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   return (
     <header className="w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 backdrop-blur-md border-b border-blue-700/30 sticky top-0 z-50 shadow-lg h-20">

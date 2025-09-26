@@ -28,23 +28,14 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     ((navigator as any).connection?.effectiveType === 'slow-2g' || 
     (navigator as any).connection?.effectiveType === '2g');
 
-  // Log initial state
-  console.log('[VideoBackground] Initial render', {
-    prefersReducedMotion,
-    isSlowConnection,
-    videoSources,
-    fallbackImage
-  });
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) {
-      console.log('[VideoBackground] No video element found on mount');
       return;
     }
 
     const handleCanPlay = () => {
-      console.log('[VideoBackground] canplay event fired');
       setIsLoading(false);
       setCanPlay(true);
       // Try to play the video
@@ -53,29 +44,24 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
-              console.log('[VideoBackground] Video started playing successfully (autoplay)');
               setUserInteracted(true);
             })
             .catch((playError) => {
-              console.log('[VideoBackground] Video autoplay prevented, waiting for user interaction:', playError.message);
               setUserInteracted(false);
             });
         }
       } catch (playError) {
-        console.warn('[VideoBackground] Failed to play video:', playError);
         setUserInteracted(false);
       }
     };
 
     const handleError = (error?: Event) => {
-      console.warn('[VideoBackground] Video background failed to load, falling back to image:', error);
       setIsLoading(false);
       setHasError(true);
       setCanPlay(false);
     };
 
     const handleLoadStart = () => {
-      console.log('[VideoBackground] loadstart event fired');
       setIsLoading(true);
     };
 
@@ -86,26 +72,21 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
 
     // Handle user interaction for autoplay
     const handleFirstUserInteraction = () => {
-      console.log('[VideoBackground] User interaction detected');
       if (canPlay && !userInteracted && !hasError && video.paused) {
         try {
           const playPromise = video.play();
           if (playPromise !== undefined) {
             playPromise
               .then(() => {
-                console.log('[VideoBackground] Video started playing after user interaction');
                 setUserInteracted(true);
               })
               .catch((playError) => {
-                console.log('[VideoBackground] Video play failed after user interaction:', playError.message);
                 // Continue with fallback image
               });
           }
         } catch (error) {
-          console.warn('[VideoBackground] Failed to play video after user interaction:', error);
+          // Continue with fallback image
         }
-      } else {
-        console.log('[VideoBackground] User interaction ignored (canPlay:', canPlay, ', userInteracted:', userInteracted, ', hasError:', hasError, ', paused:', video.paused, ')');
       }
     };
 
@@ -125,29 +106,12 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
     };
   }, [canPlay, userInteracted, hasError]);
 
-  // Log state changes
-  useEffect(() => {
-    console.log('[VideoBackground] State update', {
-      isLoading,
-      hasError,
-      canPlay,
-      userInteracted
-    });
-  }, [isLoading, hasError, canPlay, userInteracted]);
 
   // Don't load video if user prefers reduced motion or has slow connection
   const shouldLoadVideo = !prefersReducedMotion && !isSlowConnection && !hasError;
   // Only show video when it's fully ready to play smoothly
   const shouldShowVideo = shouldLoadVideo && canPlay && !isLoading;
   
-  console.log('[VideoBackground] Render', {
-    shouldLoadVideo,
-    shouldShowVideo,
-    isLoading,
-    hasError,
-    canPlay,
-    userInteracted
-  });
 
   return (
     <div className={`relative ${className}`}>
@@ -167,20 +131,7 @@ const VideoBackground: React.FC<VideoBackgroundProps> = ({
           playsInline
           preload="metadata"
           onError={() => {
-            console.log('[VideoBackground] onError prop fired');
             setHasError(true);
-          }}
-          onPlay={() => {
-            console.log('[VideoBackground] onPlay event fired', {
-              currentTime: videoRef.current?.currentTime,
-              paused: videoRef.current?.paused
-            });
-          }}
-          onPause={() => {
-            console.log('[VideoBackground] onPause event fired', {
-              currentTime: videoRef.current?.currentTime,
-              paused: videoRef.current?.paused
-            });
           }}
         >
           {videoSources.map((source, index) => (

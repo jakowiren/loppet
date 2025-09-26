@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
-import AuthGuard from "./components/AuthGuard";
 import Header from "./components/Header";
 import Index from "./pages/Index";
 import Profile from "./pages/Profile";
@@ -42,11 +41,7 @@ const App = () => (
                 <Route path="/om-oss" element={<OmOss />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/annonser/:id" element={<AdDetails />} />
-                {/* Add more routes as needed */}
-                {/* Admin route - protected */}
-                {/* Add more routes as needed */}
                 {/* Catch-all route for 404 Not Found */}
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
               </div>
