@@ -4,6 +4,7 @@ import { authenticateToken } from '../middleware/auth';
 import { supabase } from '../lib/supabase';
 import crypto from 'crypto';
 import path from 'path';
+import sharp from 'sharp';
 
 const router = express.Router();
 
@@ -11,15 +12,23 @@ const router = express.Router();
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB per file
+    fileSize: 20 * 1024 * 1024, // 20MB per file before compression
   },
   fileFilter: (req, file, cb) => {
-    // Allow only image files
-    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    // Allow common web + phone image formats
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+      'image/heic',
+      'image/heif'
+    ];
+
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files (JPEG, PNG, WebP) are allowed'));
+      cb(new Error('Only image files (JPEG, PNG, WebP, HEIC/HEIF) are allowed'));
     }
   }
 });
@@ -34,16 +43,21 @@ router.post('/images', authenticateToken, upload.array('images', 5), async (req:
     }
 
     const uploadPromises = files.map(async (file) => {
-      // Generate unique filename
-      const fileExtension = path.extname(file.originalname);
-      const fileName = `${crypto.randomUUID()}${fileExtension}`;
+      // Generate unique filename with .jpg extension
+      const fileName = `${crypto.randomUUID()}.jpg`;
       const filePath = `ad-images/${fileName}`;
+
+      // Compress & convert image to JPEG using sharp
+      const processedBuffer = await sharp(file.buffer)
+        .resize({ width: 1920, withoutEnlargement: true }) // max width 1920px
+        .jpeg({ quality: 80 }) // compress to ~80% quality
+        .toBuffer();
 
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
         .from('ad-images')
-        .upload(filePath, file.buffer, {
-          contentType: file.mimetype,
+        .upload(filePath, processedBuffer, {
+          contentType: 'image/jpeg',
           upsert: false
         });
 
@@ -61,14 +75,15 @@ router.post('/images', authenticateToken, upload.array('images', 5), async (req:
         originalName: file.originalname,
         fileName,
         url: publicUrl,
-        size: file.size
+        originalSizeKB: (file.size / 1024).toFixed(1),
+        compressedSizeKB: (processedBuffer.length / 1024).toFixed(1)
       };
     });
 
     const uploadResults = await Promise.all(uploadPromises);
 
     res.json({
-      message: 'Files uploaded successfully',
+      message: 'Files uploaded and compressed successfully',
       images: uploadResults
     });
 
