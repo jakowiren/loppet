@@ -1,8 +1,8 @@
 [variables]
-NODE_VERSION = "18"
+NODE_VERSION = "20"
 
 [phases.setup]
-nixPkgs = ["nodejs_18", "npm-9_x"]
+nixPkgs = ["nodejs_20", "npm-10_x"]
 
 [phases.install]
 cmds = ["npm install --production=false", "npx prisma generate"]

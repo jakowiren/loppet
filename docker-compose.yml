@@ -3,28 +3,27 @@ services:
   # Frontend service (React + Vite)
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.dev
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:3001
+        - VITE_GOOGLE_CLIENT_ID=${VITE_GOOGLE_CLIENT_ID}
+        - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+        - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
     ports:
       - "8080:8080"  # Match Vite config port
-    volumes:
-      - .:/app
-      - /app/node_modules
-    env_file:
-      - .env
     environment:
-      - NODE_ENV=development
-      - VITE_API_URL=http://localhost:3001
+      - NODE_ENV=production
     depends_on:
       - backend
     stdin_open: true
     tty: true
 
-  # Backend service (Node.js + Express)  
+  # Backend service (Node.js + Express)
   backend:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "3001:3001"
     volumes:
@@ -36,6 +35,5 @@ services:
       - NODE_ENV=development
       - PORT=3001
       - FRONTEND_URL=http://localhost:8080
-    working_dir: /app
     stdin_open: true
-    tty: true 
+    tty: true
