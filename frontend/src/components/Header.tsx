@@ -35,7 +35,7 @@ const Header = () => {
   const getActiveTab = () => {
     if (location.pathname.startsWith('/profile')) return 'profile';
     if (location.pathname === '/annonser' || location.pathname.startsWith('/annonser')) return 'annonser';
-    if (location.pathname === '/skapa-annons') return 'skapa-annons';
+    if (location.pathname === '/skapa-annons' || location.pathname === '/logga-in') return 'skapa-annons';
     return 'home';
   };
 

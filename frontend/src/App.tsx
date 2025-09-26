@@ -37,7 +37,7 @@ const App = () => (
                 <Route path="/profile/:username" element={<Profile />} />
                 <Route path="/annonser" element={<Annonser />} />
                 <Route path="/skapa-annons" element={<SkapaAnnons />} />
-                <Route path="/login-to-create" element={<LoginToCreateAd />} />
+                <Route path="/logga-in" element={<LoginToCreateAd />} />
                 <Route path="/om-oss" element={<OmOss />} />
                 <Route path="/faq" element={<FAQ />} />
                 <Route path="/annonser/:id" element={<AdDetails />} />

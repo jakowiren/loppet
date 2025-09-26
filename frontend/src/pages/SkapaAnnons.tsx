@@ -197,7 +197,7 @@ const SkapaAnnons = () => {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      navigate('/login-to-create');
+      navigate('/logga-in');
     }
   }, [user, isLoading, navigate]);
 

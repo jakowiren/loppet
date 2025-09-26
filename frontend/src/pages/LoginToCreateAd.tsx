@@ -35,7 +35,7 @@ const LoginToCreateAd = () => {
       {/* Video background */}
       <video
         src="/background-compressed.mp4"
-        poster="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+        poster="/video-poster.jpg"
         autoPlay
         loop
         muted

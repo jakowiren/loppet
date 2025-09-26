@@ -89,7 +89,7 @@ const GoogleSignIn: React.FC<GoogleSignInProps> = ({ className = '' }) => {
       
       // Redirect to intended destination or profile
       const redirectTo = searchParams.get('redirect') ||
-                        (location.pathname === '/login-to-create' ? '/skapa-annons' : '/profile');
+                        (location.pathname === '/logga-in' ? '/skapa-annons' : '/profile');
       navigate(redirectTo);
     } catch (error: any) {
       console.error('Google auth error:', error);
