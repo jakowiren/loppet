@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import GoogleSignIn from '@/components/GoogleSignIn';
-import VideoBackground from '@/components/VideoBackground';
 import { useAuth } from '@/contexts/AuthContext';
 import { Plus, Lock } from 'lucide-react';
 
@@ -33,16 +32,18 @@ const LoginToCreateAd = () => {
 
   return (
     <div className="min-h-screen relative">
-      <VideoBackground
-        videoSources={[
-          { src: "/background-compressed.mp4", type: "video/mp4" },
-          { src: "/background.mov", type: "video/quicktime" }
-        ]}
-        fallbackImage="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
-        className="absolute inset-0"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-blue-800/50 to-blue-700/60 z-10"></div>
-      </VideoBackground>
+      {/* Video background */}
+      <video
+        src="/background-compressed.mp4"
+        poster="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-900/60 via-blue-800/50 to-blue-700/60 z-10"></div>
       
       <div className="relative z-20 min-h-screen flex items-center justify-center py-8 px-4">
         <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm border-white/20 shadow-xl">

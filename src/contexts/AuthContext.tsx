@@ -12,7 +12,6 @@ interface User {
   location?: string;
   bio?: string;
   skills: string[];
-  githubUsername?: string;
   createdAt: string;
 }
 

@@ -39,7 +39,6 @@ export const authApi = {
   googleLogin: async (token: string, userData?: {
     username?: string;
     skills?: string[];
-    githubUsername?: string;
   }) => {
     const response = await api.post('/auth/google', {
       token,
@@ -59,51 +58,6 @@ export const authApi = {
   }
 };
 
-// Project API
-export const projectApi = {
-  getProjects: async (params?: {
-    query?: string;
-    category?: string;
-    techStack?: string[];
-    page?: number;
-    limit?: number;
-  }) => {
-    const response = await api.get('/projects', { params });
-    return response.data;
-  },
-
-  getProject: async (id: string) => {
-    const response = await api.get(`/projects/${id}`);
-    return response.data;
-  },
-
-  createProject: async (projectData: {
-    title: string;
-    description: string;
-    githubUrl?: string;
-    techStack: string[];
-    category: string;
-    impactDescription: string;
-  }) => {
-    const response = await api.post('/projects', projectData);
-    return response.data;
-  },
-
-  joinProject: async (id: string) => {
-    const response = await api.post(`/projects/${id}/join`);
-    return response.data;
-  },
-
-  leaveProject: async (id: string) => {
-    const response = await api.delete(`/projects/${id}/leave`);
-    return response.data;
-  },
-
-  getCategories: async () => {
-    const response = await api.get('/projects/meta/categories');
-    return response.data;
-  }
-};
 
 // User API
 export const userApi = {
@@ -115,7 +69,6 @@ export const userApi = {
   updateProfile: async (profileData: {
     displayName?: string;
     skills?: string[];
-    githubUsername?: string;
   }) => {
     const response = await api.put('/users/profile', profileData);
     return response.data;
@@ -232,35 +185,6 @@ export const adsApi = {
   }
 };
 
-// Admin API
-export const adminApi = {
-  getPendingProjects: async () => {
-    const response = await api.get('/admin/projects/pending');
-    return response.data;
-  },
-
-  reviewProject: async (id: string, status: 'APPROVED' | 'REJECTED', rejectionReason?: string) => {
-    const response = await api.post(`/admin/projects/${id}/review`, {
-      status,
-      rejectionReason
-    });
-    return response.data;
-  },
-
-  getDashboardStats: async () => {
-    const response = await api.get('/admin/dashboard/stats');
-    return response.data;
-  },
-
-  getAllProjects: async (params?: {
-    page?: number;
-    limit?: number;
-    status?: string;
-  }) => {
-    const response = await api.get('/admin/projects/all', { params });
-    return response.data;
-  }
-};
 
 // Races API
 export const racesApi = {
