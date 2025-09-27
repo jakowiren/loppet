@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Upload, X, Camera, MapPin, Tag, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { heicTo, isHeic } from "heic-to";
+
 
 // Bike size options for dropdown (both numeric and bucket codes)
 const BIKE_SIZE_OPTIONS = [
@@ -160,6 +162,48 @@ interface FormData {
   watchBrand?: string;
   watchSize?: string;
 }
+// Resize image but keep the original format
+async function resizeImage(file: File, maxWidth = 2000, maxHeight = 2000): Promise<Blob> {
+  const img = await createImageBitmap(file);
+  let { width, height } = img;
+
+  // Calculate scaling factor
+  if (width > maxWidth || height > maxHeight) {
+    const scale = Math.min(maxWidth / width, maxHeight / height);
+    width = Math.floor(width * scale);
+    height = Math.floor(height * scale);
+  }
+
+  // Create canvas and draw resized image
+  const canvas = new OffscreenCanvas(width, height);
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0, width, height);
+
+  // Convert canvas to Blob using the same MIME type as the original
+  return await canvas.convertToBlob({ type: file.type, quality: 0.7 });
+}
+
+// Convert resized HEIC/HEIF File to JPEG File
+async function convertHEICFileToJPEG(file: File): Promise<File> {
+  try {
+    // Use heicTo on the resized file
+    const jpegBlob = await heicTo({
+      blob: file,
+      type: "image/jpeg",
+      quality: 0.7,
+    });
+
+    return new File(
+      [jpegBlob],
+      file.name.replace(/\.(heic|heif)$/i, ".jpg"),
+      { type: "image/jpeg" }
+    );
+  } catch (err) {
+    console.error("Failed to convert HEIC file:", err);
+    throw err;
+  }
+}
+
 
 const SkapaAnnons = () => {
   const navigate = useNavigate();
@@ -208,13 +252,34 @@ const SkapaAnnons = () => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (formData.images.length + files.length > 5) {
       alert("Du kan ladda upp max 5 bilder");
       return;
     }
-    setFormData(prev => ({ ...prev, images: [...prev.images, ...files] }));
+
+    const processedFiles: File[] = [];
+
+    for (const file of files) {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (file.type === "image/heic" || file.type === "image/heif" || ext === "heic" || ext === "heif") {
+        try {
+          console.log("Converting HEIC file:", file.name);
+          const convertedFile = await convertHEICFileToJPEG(file);
+          processedFiles.push(convertedFile);
+        } catch (err) {
+          alert("Kunde inte konvertera HEIC-bild. Använd JPEG/PNG istället.");
+        }
+      } else {
+        processedFiles.push(file);
+      }
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      images: [...prev.images, ...processedFiles]
+    }));
   };
 
   const removeImage = (index: number) => {

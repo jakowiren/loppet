@@ -4,56 +4,33 @@ import { authenticateToken } from '../middleware/auth';
 import { supabase } from '../lib/supabase';
 import crypto from 'crypto';
 import path from 'path';
-import sharp from 'sharp';
-import heicConvert from 'heic-convert';
 
 const router = express.Router();
 
-// Configure multer for memory storage
+// Multer memory storage
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 20 * 1024 * 1024, // 20MB per file before compression
+    fileSize: 20 * 1024 * 1024, // 20MB
   },
   fileFilter: (req, file, cb) => {
-    // Allow common web + phone image formats
-    const allowedMimeTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/webp',
-      'image/heic',
-      'image/heif'
-    ];
-
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only image files (JPEG, PNG, WebP, HEIC/HEIF) are allowed'));
+      cb(new Error('Only JPEG, PNG, WebP images are allowed'));
     }
-  }
+  },
 });
 
-// Helper: Convert HEIC/HEIF to JPEG buffer
-const convertHeicToJpeg = async (buffer: Buffer, mimeType: string) => {
-  if (mimeType === 'image/heic' || mimeType === 'image/heif') {
-    // Convert Node Buffer to ArrayBuffer
-    const arrayBuffer = buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-
-    const converted = await heicConvert({
-      buffer: arrayBuffer, // HEIC file as ArrayBuffer
-      format: 'JPEG',
-      quality: 0.8
-    });
-
-    // heicConvert returns a Buffer, which is fine to pass to sharp
-    return Buffer.from(converted);
-  }
-  return buffer; // already a supported format
+// Safe filename generator
+const generateSafeFilename = (originalName: string) => {
+  const ext = path.extname(originalName).toLowerCase(); // keep extension lowercased
+  const uuid = crypto.randomUUID();
+  return `${uuid}${ext}`; // e.g., 123e4567-e89b-12d3-a456-426614174000.jpeg
 };
 
-
-// Upload multiple images for ads
+// Upload images
 router.post('/images', authenticateToken, upload.array('images', 5), async (req: any, res) => {
   try {
     const files = req.files as Express.Multer.File[];
@@ -62,82 +39,68 @@ router.post('/images', authenticateToken, upload.array('images', 5), async (req:
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
-    const uploadPromises = files.map(async (file) => {
-      // Convert HEIC/HEIF to JPEG if needed
-      const bufferToProcess = await convertHeicToJpeg(file.buffer, file.mimetype);
+    const uploadResults = await Promise.all(
+      files.map(async (file) => {
+        const fileName = generateSafeFilename(file.originalname);
+        const filePath = `ad-images/${fileName}`;
 
-      // Compress & resize image using Sharp
-      const processedBuffer = await sharp(bufferToProcess)
-        .resize({ width: 1920, withoutEnlargement: true }) // max width 1920px
-        .jpeg({ quality: 80 }) // compress to ~80% quality
-        .toBuffer();
-
-      // Generate unique filename with .jpg extension
-      const fileName = `${crypto.randomUUID()}.jpg`;
-      const filePath = `ad-images/${fileName}`;
-
-      // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
-        .from('ad-images')
-        .upload(filePath, processedBuffer, {
-          contentType: 'image/jpeg',
-          upsert: false
+        console.log('Uploading file:', {
+          originalName: file.originalname,
+          safeFileName: fileName,
+          filePath,
+          size: file.size,
         });
 
-      if (error) {
-        console.error('Supabase upload error:', error);
-        throw new Error(`Upload failed for ${file.originalname}: ${error.message}`);
-      }
+        const { data, error } = await supabase.storage
+          .from('ad-images')
+          .upload(filePath, Buffer.from(file.buffer), {
+            contentType: file.mimetype,
+            upsert: false,
+          });
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('ad-images')
-        .getPublicUrl(filePath);
+        if (error) {
+          console.error('Supabase upload error:', error);
+          throw new Error(`Upload failed for ${file.originalname}: ${error.message}`);
+        }
 
-      return {
-        originalName: file.originalname,
-        fileName,
-        url: publicUrl,
-        originalSizeKB: (file.size / 1024).toFixed(1),
-        compressedSizeKB: (processedBuffer.length / 1024).toFixed(1)
-      };
-    });
-
-    const uploadResults = await Promise.all(uploadPromises);
+        const { data: urlData } = supabase.storage.from('ad-images').getPublicUrl(filePath);
+        return {
+          originalName: file.originalname,
+          fileName,
+          url: urlData.publicUrl,
+          size: file.size,
+        };
+      })
+    );
 
     res.json({
-      message: 'Files uploaded and compressed successfully',
-      images: uploadResults
+      message: 'Files uploaded successfully',
+      images: uploadResults,
     });
-
-  } catch (error: any) {
-    console.error('Image upload error:', error);
+  } catch (err: any) {
+    console.error('Image upload error:', err);
     res.status(500).json({
       error: 'Failed to upload images',
-      details: error.message
+      details: err.message,
     });
   }
 });
 
-// Delete image (for cleanup/editing)
-router.delete('/images/:fileName', authenticateToken, async (req: any, res) => {
+// Delete image
+router.delete('/images/:fileName', authenticateToken, async (req, res) => {
   try {
     const { fileName } = req.params;
     const filePath = `ad-images/${fileName}`;
 
-    const { error } = await supabase.storage
-      .from('ad-images')
-      .remove([filePath]);
-
+    const { error } = await supabase.storage.from('ad-images').remove([filePath]);
     if (error) {
       console.error('Supabase delete error:', error);
       return res.status(500).json({ error: 'Failed to delete image' });
     }
 
     res.json({ message: 'Image deleted successfully' });
-
-  } catch (error) {
-    console.error('Delete image error:', error);
+  } catch (err) {
+    console.error('Delete image error:', err);
     res.status(500).json({ error: 'Failed to delete image' });
   }
 });
