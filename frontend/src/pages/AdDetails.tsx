@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { adsApi } from "@/lib/api";
-import { Loader2, ChevronLeft, ChevronRight, X, Edit, Save } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, X, Edit, Save, ZoomIn, ZoomOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -115,6 +115,7 @@ const AdDetails = () => {
   });
 
   const [loadingImages, setLoadingImages] = useState<string[]>([]);
+  const [isZoomed, setIsZoomed] = useState(false); // Add this state
 
   useEffect(() => {
     if (ad) {
@@ -135,6 +136,18 @@ const AdDetails = () => {
       });
     }
   }, [ad]);
+
+  // Close modal (large image display) on Escape key
+  useEffect(() => {
+    if (!showImageModal) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowImageModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showImageModal]);
 
   if (isLoading) {
     return (
@@ -410,7 +423,7 @@ const AdDetails = () => {
           <img
             src={ad.images[currentImageIndex] || "/placeholder-product.jpg"}
             alt={`${ad.title} - bild ${currentImageIndex + 1}`}
-            className="w-full h-80 object-cover rounded-lg cursor-pointer hover:brightness-95 transition-all"
+            className="w-full h-[40rem] object-cover rounded-lg cursor-pointer hover:brightness-95 transition-all"
             onClick={() => openImageModal(currentImageIndex)}
           />
 
@@ -779,25 +792,103 @@ const AdDetails = () => {
       {/* Fullscreen Image Modal */}
       {showImageModal && ad.images && ad.images.length > 0 && (
         <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 50,
+            background: "rgba(0,0,0,0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "auto",
+          }}
           onClick={() => setShowImageModal(false)}
         >
-          <div className="relative max-w-4xl max-h-full p-4">
+          <div
+            style={{
+              position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              outline: "none",
+            }}
+            tabIndex={-1}
+            onClick={e => e.stopPropagation()}
+          >
             {/* Close button */}
             <button
               onClick={() => setShowImageModal(false)}
-              className="absolute top-2 right-2 z-10 bg-black/50 text-white rounded-full p-2 hover:bg-black/70 transition-colors"
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 16,
+                zIndex: 10,
+                background: "rgba(0,0,0,0.5)",
+                color: "white",
+                borderRadius: "9999px",
+                padding: 8,
+              }}
             >
               <X className="h-5 w-5" />
             </button>
 
-            {/* Main modal image */}
-            <img
-              src={ad.images[currentImageIndex]}
-              alt={`${ad.title} - bild ${currentImageIndex + 1}`}
-              className="max-w-full max-h-full object-contain rounded-lg"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {/* Main modal image with zoom button */}
+            <div
+              style={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "100%",
+                height: "100%",
+                minHeight: "60vh",
+                minWidth: "60vw",
+              }}
+            >
+              <img
+                src={ad.images[currentImageIndex]}
+                alt={`${ad.title} - bild ${currentImageIndex + 1}`}
+                style={{
+                  objectFit: "contain",
+                  borderRadius: "0.5rem",
+                  maxWidth: "90vw",
+                  maxHeight: "90vh",
+                  width: "auto",
+                  height: "auto",
+                  display: "block",
+                  margin: "0 auto",
+                  transition: "transform 0.3s cubic-bezier(.4,2,.6,1)",
+                  transform: isZoomed ? "scale(1.9)" : "scale(1)",
+                  boxShadow: isZoomed ? "0 0 0 4px rgba(0,0,0,0.3)" : undefined,
+                  zIndex: 1,
+                }}
+              />
+
+              {/* Zoom button */}
+              <button
+                onClick={() => setIsZoomed(z => !z)}
+                style={{
+                  position: "absolute",
+                  bottom: 24,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  background: "rgba(0,0,0,0.7)",
+                  color: "white",
+                  borderRadius: "9999px",
+                  padding: "8px 16px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  zIndex: 2,
+                  cursor: "pointer",
+                }}
+                title={isZoomed ? "Zooma ut" : "Zooma in"}
+              >
+                {isZoomed ? <ZoomOut className="h-5 w-5" /> : <ZoomIn className="h-5 w-5" />}
+                {isZoomed ? "Zooma ut" : "Zooma in"}
+              </button>
+            </div>
 
             {/* Navigation arrows in modal - only if more than 1 image */}
             {ad.images.length > 1 && (
@@ -807,53 +898,62 @@ const AdDetails = () => {
                     e.stopPropagation();
                     prevImage();
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors"
+                  style={{
+                    position: "absolute",
+                    left: 16,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "rgba(0,0,0,0.4)",
+                    color: "white",
+                    borderRadius: "9999px",
+                    padding: 16,
+                    zIndex: 10, 
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
-                  <ChevronLeft className="h-6 w-6" />
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     nextImage();
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-3 hover:bg-black/70 transition-colors"
+                  style={{
+                    position: "absolute",
+                    right: 16,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "rgba(0,0,0,0.4)",
+                    color: "white",
+                    borderRadius: "9999px",
+                    padding: 16,
+                    zIndex: 10, 
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
                 >
-                  <ChevronRight className="h-6 w-6" />
+                  <ChevronRight className="h-5 w-5" />
                 </button>
 
                 {/* Image counter in modal */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full">
+                <div
+                  style={{
+                    position: "absolute",
+                    bottom: 32,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    background: "rgba(0,0,0,0.5)",
+                    color: "white",
+                    padding: "8px 16px",
+                    borderRadius: "9999px",
+                  }}
+                >
                   {currentImageIndex + 1} / {ad.images.length}
                 </div>
               </>
-            )}
-
-            {/* Thumbnail strip in modal - only if more than 1 image */}
-            {ad.images.length > 1 && (
-              <div className="absolute bottom-4 left-4 right-4 flex justify-center">
-                <div className="flex gap-2 overflow-x-auto max-w-full px-4">
-                  {ad.images.map((image, index) => (
-                    <button
-                      key={index}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCurrentImageIndex(index);
-                      }}
-                      className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
-                        index === currentImageIndex
-                          ? 'border-white scale-110'
-                          : 'border-gray-400 hover:border-gray-300'
-                      }`}
-                    >
-                      <img
-                        src={image}
-                        alt={`Thumbnail ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              </div>
             )}
           </div>
         </div>
