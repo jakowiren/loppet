@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import axios from "axios"; // For image upload/delete
 import { heicTo } from "heic-to"; // Add this import
+import { useRef } from "react";
 
 const CATEGORIES = [
   { label: "Cyklar", value: "Cyklar" },
@@ -112,6 +113,8 @@ const AdDetails = () => {
     clothingBrand: "",
     images: [] as string[], // <-- Add images array
   });
+
+  const [loadingImages, setLoadingImages] = useState<string[]>([]);
 
   useEffect(() => {
     if (ad) {
@@ -244,7 +247,7 @@ const AdDetails = () => {
     }
   }
 
-  // --- Image upload handler ---
+  // --- Image upload handler with HEIC placeholder spinner ---
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -254,6 +257,8 @@ const AdDetails = () => {
     }
 
     const processedFiles: File[] = [];
+    const tempIds: string[] = [];
+
     for (const file of files) {
       const ext = file.name.split(".").pop()?.toLowerCase();
       if (
@@ -262,16 +267,35 @@ const AdDetails = () => {
         ext === "heic" ||
         ext === "heif"
       ) {
+        // Generate a temporary ID for the placeholder
+        const tempId = `loading-${Date.now()}-${Math.random()}`;
+        tempIds.push(tempId);
+
+        // Add placeholder to images and loadingImages
+        setEditForm((prev) => ({
+          ...prev,
+          images: [...prev.images, tempId],
+        }));
+        setLoadingImages((prev) => [...prev, tempId]);
+
         try {
           const convertedFile = await convertHEICFileToJPEG(file);
           processedFiles.push(convertedFile);
         } catch (err) {
+          // Remove placeholder if conversion fails
+          setEditForm((prev) => ({
+            ...prev,
+            images: prev.images.filter((img) => img !== tempId),
+          }));
+          setLoadingImages((prev) => prev.filter((id) => id !== tempId));
           toast.error("Kunde inte konvertera HEIC-bild. Använd JPEG/PNG istället.");
         }
       } else {
         processedFiles.push(file);
       }
     }
+
+    if (processedFiles.length === 0) return;
 
     const formData = new FormData();
     processedFiles.forEach((file) => formData.append("images", file));
@@ -283,12 +307,32 @@ const AdDetails = () => {
         },
       });
       const newImages = res.data.images.map((img: any) => img.url);
-      setEditForm((prev) => ({
-        ...prev,
-        images: [...prev.images, ...newImages],
-      }));
+
+      // Replace placeholders with real image URLs
+      setEditForm((prev) => {
+        let images = [...prev.images];
+        tempIds.forEach((tempId, idx) => {
+          const realUrl = newImages[idx];
+          const tempIndex = images.indexOf(tempId);
+          if (tempIndex !== -1 && realUrl) {
+            images[tempIndex] = realUrl;
+          }
+        });
+        // Add any non-HEIC images at the end
+        if (newImages.length > tempIds.length) {
+          images = images.concat(newImages.slice(tempIds.length));
+        }
+        return { ...prev, images };
+      });
+      setLoadingImages((prev) => prev.filter((id) => !tempIds.includes(id)));
       toast.success("Bilder uppladdade!");
     } catch (err: any) {
+      // Remove placeholders on error
+      setEditForm((prev) => ({
+        ...prev,
+        images: prev.images.filter((img) => !tempIds.includes(img)),
+      }));
+      setLoadingImages((prev) => prev.filter((id) => !tempIds.includes(id)));
       const msg =
         err.response?.data?.error ||
         err.response?.data?.message ||
@@ -423,9 +467,17 @@ const AdDetails = () => {
             <label className="block text-sm font-medium text-gray-700 mb-1">Bilder</label>
             <div className="flex gap-2 flex-wrap mb-2">
               {editForm.images.map((img, idx) => (
-                <div key={idx} className="relative">
-                  <img src={img} className="w-20 h-20 object-cover rounded" alt={`Bild ${idx + 1}`} />
-                  {editForm.images.length > 1 && ( // Only show X button if more than 1 image
+                <div key={idx} className="relative w-20 h-20 flex items-center justify-center bg-gray-100 rounded">
+                  {loadingImages.includes(img) ? (
+                    // Show spinner for loading images
+                    <svg className="animate-spin h-8 w-8 text-gray-400" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                  ) : (
+                    <img src={img} className="w-20 h-20 object-cover rounded" alt={`Bild ${idx + 1}`} />
+                  )}
+                  {editForm.images.length > 1 && !loadingImages.includes(img) && (
                     <button
                       type="button"
                       className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"

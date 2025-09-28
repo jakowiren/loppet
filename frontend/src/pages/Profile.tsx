@@ -647,7 +647,8 @@ const Profile = () => {
                                   </Badge>
                                 </div>
                               </div>
-                              <p className="text-gray-600 text-sm mb-3">{ad.description}</p>
+                              {/* Only show the first 2 lines of the description */}
+                              <p className="text-gray-600 text-sm mb-3 line-clamp-2">{ad.description}</p>
                               <div className="flex items-center justify-between text-sm">
                                 <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
                                 <div className="flex items-center gap-4 text-gray-500">
