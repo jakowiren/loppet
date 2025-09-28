@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { adsApi } from "@/lib/api";
-import { Loader2, ChevronLeft, ChevronRight, X, Edit, Save, ZoomIn, ZoomOut } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, X, Edit, Save, ZoomIn, ZoomOut, Trash2, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -111,11 +111,16 @@ const AdDetails = () => {
     shoeBrand: "",
     clothingSize: "",
     clothingBrand: "",
-    images: [] as string[], // <-- Add images array
+    images: [] as string[], 
   });
 
   const [loadingImages, setLoadingImages] = useState<string[]>([]);
-  const [isZoomed, setIsZoomed] = useState(false); // Add this state
+  const [isZoomed, setIsZoomed] = useState(false); 
+
+  const [showDeleteAdConfirm, setShowDeleteAdConfirm] = useState(false);
+  const [deletingAd, setDeletingAd] = useState(false);
+  const [updatingAd, setUpdatingAd] = useState(false);
+  const [showMarkAsSoldConfirm, setShowMarkAsSoldConfirm] = useState(false); 
 
   useEffect(() => {
     if (ad) {
@@ -381,6 +386,35 @@ const AdDetails = () => {
     }
   };
 
+  // Add these handlers in your component:
+  const handleDeleteAd = async () => {
+    try {
+      setDeletingAd(true);
+      await adsApi.deleteAd(ad.id);
+      toast.success("Annons raderad");
+      // Redirect or update UI as needed, e.g.:
+      window.location.href = "/profile";
+    } catch (error: any) {
+      toast.error("Kunde inte radera annons: " + (error.response?.data?.error || "Okänt fel"));
+    } finally {
+      setDeletingAd(false);
+      setShowDeleteAdConfirm(false);
+    }
+  };
+
+  const handleMarkAsSold = async () => {
+    try {
+      setUpdatingAd(true);
+      await adsApi.updateAd(ad.id, { status: 'SOLD' });
+      toast.success("Annons markerad som såld");
+      queryClient.invalidateQueries({ queryKey: ["ad", id] });
+    } catch (error: any) {
+      toast.error("Kunde inte markera annons som såld: " + (error.response?.data?.error || "Okänt fel"));
+    } finally {
+      setUpdatingAd(false);
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg">
       <div className="flex justify-between items-start mb-4">
@@ -396,10 +430,16 @@ const AdDetails = () => {
         )}
 
         {isOwner && !isEditing && (
-          <Button onClick={handleEdit} variant="outline" className="ml-4">
-            <Edit className="h-4 w-4 mr-2" />
-            Redigera
-          </Button>
+          ad.status === "SOLD" ? (
+            <Badge className="ml-8 bg-blue-100 text-blue-800 text-1.5xl px-5 py-1" variant="secondary">
+              Såld
+            </Badge>
+          ) : (
+            <Button onClick={handleEdit} variant="outline" className="ml-4">
+              <Edit className="h-4 w-4 mr-2" />
+              Redigera
+            </Button>
+          )
         )}
 
         {isOwner && isEditing && (
@@ -411,6 +451,26 @@ const AdDetails = () => {
             <Button onClick={handleCancel} variant="outline" disabled={isSaving}>
               <X className="h-4 w-4 mr-2" />
               Avbryt
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteAdConfirm(true)}
+              disabled={deletingAd}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              {deletingAd ? "Tar bort..." : "Ta bort annons"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowMarkAsSoldConfirm(true)}
+              disabled={updatingAd || ad.status === "SOLD"}
+            >
+              <Package className="h-4 w-4 mr-2" />
+              {ad.status === "SOLD"
+                ? "Såld"
+                : updatingAd
+                  ? "Markerar..."
+                  : "Markera som såld"}
             </Button>
           </div>
         )}
@@ -955,6 +1015,65 @@ const AdDetails = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation dialog for ad deletion */}
+      {showDeleteAdConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ta bort annons</h3>
+            <p className="text-gray-600 mb-6">
+              Är du säker på att du vill ta bort denna annons? Detta kan inte ångras.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteAdConfirm(false)}
+                disabled={deletingAd}
+              >
+                Avbryt
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAd}
+                disabled={deletingAd}
+              >
+                {deletingAd ? "Tar bort..." : "Ta bort annons"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation dialog for marking as sold */}
+      {showMarkAsSoldConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Markera som såld</h3>
+            <p className="text-gray-600 mb-6">
+              Är du säker på att du vill markera denna annons som såld? Annonsen kommer då att döljas för andra användare och detta kan inte ångras.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setShowMarkAsSoldConfirm(false)}
+                disabled={updatingAd}
+              >
+                Avbryt
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={async () => {
+                  await handleMarkAsSold();
+                  setShowMarkAsSoldConfirm(false);
+                }}
+                disabled={updatingAd}
+              >
+                {updatingAd ? "Markerar..." : "Markera som såld"}
+              </Button>
+            </div>
           </div>
         </div>
       )}
