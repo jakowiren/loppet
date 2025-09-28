@@ -40,8 +40,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/ads', adRoutes);
-app.use('/api/races', raceRoutes);
-app.use('/api/messages', messageRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 

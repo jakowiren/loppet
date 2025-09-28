@@ -14,8 +14,9 @@ interface User {
   createdAt: string;
 }
 
-interface AuthContextType {
+export type AuthContextType = {
   user: User | null;
+  token: string | null; // <-- Add this line
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (token: string, user: User) => void;
@@ -39,6 +40,7 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null); // <-- Add this line
   const [isLoading, setIsLoading] = useState(true);
 
   const isAuthenticated = !!user;
@@ -56,6 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const response = await authApi.getCurrentUser();
         setUser(response.user);
+        setToken(token); // <-- Add this line
       } catch (error) {
         console.error('Failed to get current user:', error);
         // Clear invalid token
@@ -71,11 +74,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = (token: string, userData: User) => {
     Cookies.set('auth_token', token, { expires: 7 }); // 7 days
     setUser(userData);
+    setToken(token); // <-- Add this line
   };
 
   const logout = () => {
     Cookies.remove('auth_token');
     setUser(null);
+    setToken(null); // <-- Add this line
     // Redirect to homepage after logout
     window.location.href = '/';
   };
@@ -88,6 +93,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const value: AuthContextType = {
     user,
+    token, // <-- Add this line
     isLoading,
     isAuthenticated,
     login,

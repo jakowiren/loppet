@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { adsApi } from "@/lib/api";
 import { Loader2, ChevronLeft, ChevronRight, X, Edit, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import MessageDialog from "@/components/MessageDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import axios from "axios"; // For image upload/delete
+import { heicTo } from "heic-to"; // Add this import
 
 const CATEGORIES = [
   { label: "Cyklar", value: "Cyklar" },
@@ -76,6 +78,8 @@ const AdDetails = () => {
     enabled: !!id,
   });
 
+  const ad = data; // <-- Move this up, before any useEffect that uses 'ad'
+
   const [messageDialog, setMessageDialog] = useState<{
     open: boolean;
     adId: string;
@@ -106,7 +110,28 @@ const AdDetails = () => {
     shoeBrand: "",
     clothingSize: "",
     clothingBrand: "",
+    images: [] as string[], // <-- Add images array
   });
+
+  useEffect(() => {
+    if (ad) {
+      setEditForm({
+        title: ad.title,
+        description: ad.description,
+        price: ad.price,
+        location: ad.location,
+        category: ad.category || "",
+        condition: ad.condition || "",
+        bikeSize: ad.bikeSize || "",
+        bikeBrand: ad.bikeBrand || "",
+        shoeSize: ad.shoeSize || "",
+        shoeBrand: ad.shoeBrand || "",
+        clothingSize: ad.clothingSize || "",
+        clothingBrand: ad.clothingBrand || "",
+        images: ad.images || [],
+      });
+    }
+  }, [ad]);
 
   if (isLoading) {
     return (
@@ -126,29 +151,8 @@ const AdDetails = () => {
 
   if (!data) return null;
 
-  const ad = data;
-
   // Check if current user is the owner of the ad
   const isOwner = user && user.id === ad.seller.id;
-
-  // Initialize edit form when ad data loads
-  if (ad && !editForm.title) {
-    setEditForm({
-      title: ad.title,
-      description: ad.description,
-      price: ad.price,
-      location: ad.location,
-      category: ad.category || "",
-      condition: ad.condition || "",
-      // Category-specific fields
-      bikeSize: ad.bikeSize || "",
-      bikeBrand: ad.bikeBrand || "",
-      shoeSize: ad.shoeSize || "",
-      shoeBrand: ad.shoeBrand || "",
-      clothingSize: ad.clothingSize || "",
-      clothingBrand: ad.clothingBrand || "",
-    });
-  }
 
   const handleContactSeller = () => {
     setMessageDialog({
@@ -196,17 +200,19 @@ const AdDetails = () => {
       shoeBrand: ad.shoeBrand || "",
       clothingSize: ad.clothingSize || "",
       clothingBrand: ad.clothingBrand || "",
+      images: ad.images || [], // <-- Reset images
     });
   };
 
+  // --- Save handler: send updated images to backend ---
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      await adsApi.updateAd(ad.id, editForm);
-
-      // Update the query cache
+      await adsApi.updateAd(ad.id, {
+        ...editForm,
+        images: editForm.images, // Send updated image URLs
+      });
       queryClient.invalidateQueries({ queryKey: ["ad", id] });
-
       setIsEditing(false);
       toast.success("Annons uppdaterad!");
     } catch (error: any) {
@@ -216,6 +222,107 @@ const AdDetails = () => {
     }
   };
 
+  // Get auth token for protected endpoints
+  const { token } = useAuth();
+
+  // Helper to convert HEIC/HEIF File to JPEG File
+  async function convertHEICFileToJPEG(file: File): Promise<File> {
+    try {
+      const jpegBlob = await heicTo({
+        blob: file,
+        type: "image/jpeg",
+        quality: 0.7,
+      });
+      return new File(
+        [jpegBlob],
+        file.name.replace(/\.(heic|heif)$/i, ".jpg"),
+        { type: "image/jpeg" }
+      );
+    } catch (err) {
+      console.error("Failed to convert HEIC file:", err);
+      throw err;
+    }
+  }
+
+  // --- Image upload handler ---
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    if (editForm.images.length + files.length > 5) {
+      toast.error("Max 5 bilder är tillåtna.");
+      return;
+    }
+
+    const processedFiles: File[] = [];
+    for (const file of files) {
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (
+        file.type === "image/heic" ||
+        file.type === "image/heif" ||
+        ext === "heic" ||
+        ext === "heif"
+      ) {
+        try {
+          const convertedFile = await convertHEICFileToJPEG(file);
+          processedFiles.push(convertedFile);
+        } catch (err) {
+          toast.error("Kunde inte konvertera HEIC-bild. Använd JPEG/PNG istället.");
+        }
+      } else {
+        processedFiles.push(file);
+      }
+    }
+
+    const formData = new FormData();
+    processedFiles.forEach((file) => formData.append("images", file));
+    try {
+      const res = await axios.post("/api/upload/images", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      const newImages = res.data.images.map((img: any) => img.url);
+      setEditForm((prev) => ({
+        ...prev,
+        images: [...prev.images, ...newImages],
+      }));
+      toast.success("Bilder uppladdade!");
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Okänt fel";
+      toast.error("Kunde inte ladda upp bilder: " + msg);
+    }
+  };
+
+  // --- Image delete handler ---
+  const handleImageDelete = async (imgUrl: string, idx: number) => {
+    // Extract filename from URL (assuming /ad-images/filename.ext)
+    const parts = imgUrl.split("/");
+    const fileName = parts[parts.length - 1];
+    try {
+      await axios.delete(`/api/upload/images/${fileName}`, {
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+      });
+      setEditForm((prev) => ({
+        ...prev,
+        images: prev.images.filter((_, i) => i !== idx),
+      }));
+      toast.success("Bild borttagen!");
+    } catch (err: any) {
+      const msg =
+        err.response?.data?.error ||
+        err.response?.data?.message ||
+        err.message ||
+        "Okänt fel";
+      toast.error("Kunde inte ta bort bild: " + msg);
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow rounded-lg">
@@ -307,6 +414,41 @@ const AdDetails = () => {
                 />
               </button>
             ))}
+          </div>
+        )}
+
+        {/* --- Image management in edit mode --- */}
+        {isEditing && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Bilder</label>
+            <div className="flex gap-2 flex-wrap mb-2">
+              {editForm.images.map((img, idx) => (
+                <div key={idx} className="relative">
+                  <img src={img} className="w-20 h-20 object-cover rounded" alt={`Bild ${idx + 1}`} />
+                  {editForm.images.length > 1 && ( // Only show X button if more than 1 image
+                    <button
+                      type="button"
+                      className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1"
+                      onClick={() => handleImageDelete(img, idx)}
+                      title="Ta bort bild"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              <label className="flex flex-col items-center justify-center w-20 h-20 border-2 border-dashed border-gray-300 rounded cursor-pointer hover:border-blue-400">
+                <span className="text-2xl text-gray-400">+</span>
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            <p className="text-xs text-gray-500">Max 5 bilder. Endast JPG, PNG, WebP, HEIC, HEIF.</p>
           </div>
         )}
       </div>
