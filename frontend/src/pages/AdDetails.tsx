@@ -338,7 +338,7 @@ const AdDetails = () => {
           />
         </div>
       ) : (
-        <p className="mb-4">{ad.description}</p>
+        <p className="mb-4 whitespace-pre-line">{ad.description}</p>
       )}
 
       <div className="text-sm text-gray-600 mb-6 space-y-1">
