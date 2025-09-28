@@ -238,6 +238,7 @@ const SkapaAnnons = () => {
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingImages, setLoadingImages] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -260,15 +261,29 @@ const SkapaAnnons = () => {
     }
 
     const processedFiles: File[] = [];
+    const tempIds: string[] = [];
 
     for (const file of files) {
       const ext = file.name.split(".").pop()?.toLowerCase();
       if (file.type === "image/heic" || file.type === "image/heif" || ext === "heic" || ext === "heif") {
+        // Add a placeholder for this HEIC image
+        const tempId = `loading-${Date.now()}-${Math.random()}`;
+        tempIds.push(tempId);
+        setLoadingImages(prev => [...prev, tempId]);
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, tempId as any], // tempId as any to fit File[] type
+        }));
+
         try {
-          console.log("Converting HEIC file:", file.name);
           const convertedFile = await convertHEICFileToJPEG(file);
           processedFiles.push(convertedFile);
         } catch (err) {
+          setFormData(prev => ({
+            ...prev,
+            images: prev.images.filter(img => img !== tempId),
+          }));
+          setLoadingImages(prev => prev.filter(id => id !== tempId));
           alert("Kunde inte konvertera HEIC-bild. Använd JPEG/PNG istället.");
         }
       } else {
@@ -276,10 +291,17 @@ const SkapaAnnons = () => {
       }
     }
 
-    setFormData(prev => ({
-      ...prev,
-      images: [...prev.images, ...processedFiles]
-    }));
+    // Remove all placeholders and add real images
+    if (processedFiles.length > 0) {
+      setFormData(prev => {
+        // Remove all tempIds
+        let images = prev.images.filter(img => !tempIds.includes(img as any));
+        // Add processedFiles
+        images = [...images, ...processedFiles];
+        return { ...prev, images };
+      });
+      setLoadingImages(prev => prev.filter(id => !tempIds.includes(id)));
+    }
   };
 
   const removeImage = (index: number) => {
@@ -781,13 +803,21 @@ const SkapaAnnons = () => {
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {formData.images.map((file, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={URL.createObjectURL(file)}
-                        alt={`Upload ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border"
-                      />
+                  {formData.images.map((img, index) => (
+                    <div key={index} className="relative group w-full h-32 flex items-center justify-center bg-gray-100 rounded-lg border">
+                      {typeof img === "string" && loadingImages.includes(img) ? (
+                        // Spinner for HEIC placeholder
+                        <svg className="animate-spin h-8 w-8 text-gray-400" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        </svg>
+                      ) : (
+                        <img
+                          src={typeof img === "string" ? "" : URL.createObjectURL(img)}
+                          alt={`Upload ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border"
+                        />
+                      )}
                       <button
                         type="button"
                         onClick={() => removeImage(index)}

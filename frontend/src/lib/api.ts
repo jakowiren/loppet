@@ -177,6 +177,7 @@ export const adsApi = {
     condition?: string;
     location?: string;
     status?: string;
+    images?: string[];
   }) => {
     const response = await api.put(`/ads/${id}`, updateData);
     return response.data;

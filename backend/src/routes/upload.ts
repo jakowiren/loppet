@@ -88,14 +88,15 @@ router.post('/images', authenticateToken, upload.array('images', 5), async (req:
 
 // Delete image
 router.delete('/images/:fileName', authenticateToken, async (req, res) => {
-  try {
-    const { fileName } = req.params;
-    const filePath = `ad-images/${fileName}`;
+  const fileName = req.params.fileName;
+  console.log("Trying to delete file:", fileName);
 
-    const { error } = await supabase.storage.from('ad-images').remove([filePath]);
+  try {
+    // Remove using just the filename (no folder prefix)
+    const { error } = await supabase.storage.from('ad-images').remove([fileName]);
     if (error) {
       console.error('Supabase delete error:', error);
-      return res.status(500).json({ error: 'Failed to delete image' });
+      return res.status(404).json({ error: "File not found or could not be deleted" });
     }
 
     res.json({ message: 'Image deleted successfully' });

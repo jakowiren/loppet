@@ -100,6 +100,8 @@ const Profile = () => {
   const [deletingAdId, setDeletingAdId] = useState<string | null>(null);
   const [updatingAdId, setUpdatingAdId] = useState<string | null>(null);
   const [showDeleteAdConfirm, setShowDeleteAdConfirm] = useState<string | null>(null);
+  const [showMarkAsSoldConfirm, setShowMarkAsSoldConfirm] = useState<string | null>(null);
+  const [deletingAd, setDeletingAd] = useState(false);
   const [editForm, setEditForm] = useState({
     displayName: "",
     email: "",
@@ -647,7 +649,8 @@ const Profile = () => {
                                   </Badge>
                                 </div>
                               </div>
-                              <p className="text-gray-600 text-sm mb-3">{ad.description}</p>
+                              {/* Only show the first 2 lines of the description */}
+                              <p className="text-gray-600 text-sm mb-3 line-clamp-2">{ad.description}</p>
                               <div className="flex items-center justify-between text-sm">
                                 <span className="font-semibold text-blue-600">{formatPrice(ad.price)}</span>
                                 <div className="flex items-center gap-4 text-gray-500">
@@ -680,7 +683,7 @@ const Profile = () => {
                                   onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    handleMarkAsSold(ad.id);
+                                    setShowMarkAsSoldConfirm(ad.id); // <-- Show confirmation dialog
                                   }}
                                   disabled={ad.status === 'SOLD'}
                                 >
@@ -1055,6 +1058,37 @@ const Profile = () => {
                   disabled={deletingAdId !== null}
                 >
                   {deletingAdId === showDeleteAdConfirm ? 'Tar bort...' : 'Ta bort annons'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mark as Sold Confirmation Dialog */}
+        {showMarkAsSoldConfirm && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Markera som såld</h3>
+              <p className="text-gray-600 mb-6">
+                Är du säker på att du vill markera denna annons som såld? Annonsen kommer då att döljas för andra användare och detta kan inte ångras.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowMarkAsSoldConfirm(null)}
+                  disabled={updatingAdId === showMarkAsSoldConfirm}
+                >
+                  Avbryt
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={async () => {
+                    await handleMarkAsSold(showMarkAsSoldConfirm);
+                    setShowMarkAsSoldConfirm(null);
+                  }}
+                  disabled={updatingAdId === showMarkAsSoldConfirm}
+                >
+                  {updatingAdId === showMarkAsSoldConfirm ? "Markerar..." : "Markera som såld"}
                 </Button>
               </div>
             </div>
